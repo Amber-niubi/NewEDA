@@ -1,0 +1,18 @@
+<template v-if="enabled">
+    <modal v-model="enabled" id="openblock-help" :mask-closable="false" sticky :mask="true" footer-hide width="400"
+        :closable="true" :title="$t('编辑器设置')">
+        <div>
+            <p>默认启用UI:</p>
+            <p>
+
+                <CheckboxGroup v-model="settings.enabledUI">
+                    <Checkbox label="actionGroup">{{$t('行为组')}}</Checkbox>
+                    <Checkbox label="functionGroup">{{$t('函数组')}}</Checkbox>
+                    <Checkbox label="dataset">{{$t('数据集')}}</Checkbox>
+                    <Checkbox label="assets">{{$t('资产')}}</Checkbox>
+                    <Checkbox label="exportModule">{{$t('导出模块')}}</Checkbox>
+                </CheckboxGroup>
+            </p>
+        </div>
+    </modal>
+</template>

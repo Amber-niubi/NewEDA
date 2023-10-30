@@ -1,0 +1,7 @@
+{
+    "src": [
+        "start.xs",
+        "bird.xs"
+    ],
+    "data": []
+}

@@ -1,0 +1,9 @@
+{
+    "src":[
+        "Start.xs",
+        "lifeRestart.xs"
+    ],
+    "data":[
+        "Start.xlsx"
+    ]
+}

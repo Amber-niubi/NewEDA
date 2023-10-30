@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>狮偶 IDE</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            min-width: 800px;
+            margin: 0;
+        }
+
+        #system-loading {
+            height: 100%;
+            width: 100%;
+            /* text-align: center; */
+            background-color: #f5f7f9;
+            /* background-color: #fff; */
+            z-index: 1000000;
+            position: fixed;
+        }
+
+        .loader {
+            color: #515a6e;
+            font-size: 90px;
+            text-indent: -9999em;
+            overflow: hidden;
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+            margin: 72px auto;
+            position: relative;
+            -webkit-transform: translateZ(0);
+            -ms-transform: translateZ(0);
+            transform: translateZ(0);
+            -webkit-animation: load6 10.8s infinite ease, round 0.8s infinite ease;
+            animation: load6 0.8s infinite ease, round 0.8s infinite ease;
+        }
+
+        @-webkit-keyframes load6 {
+            0% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+
+            5%,
+            95% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+
+            10%,
+            59% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+            }
+
+            20% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+            }
+
+            38% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+            }
+
+            100% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+        }
+
+        @keyframes load6 {
+            0% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+
+            5%,
+            95% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+
+            10%,
+            59% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+            }
+
+            20% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+            }
+
+            38% {
+                box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+            }
+
+            100% {
+                box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+            }
+        }
+
+        @-webkit-keyframes round {
+            0% {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes round {
+            0% {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        .layout-footer {
+            border-top: #cccccc 0.5px solid;
+        }
+
+        .sider-enter-active,
+        .sider-leave-active {
+            transition: margin-left 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        .sider-enter-from,
+        .sider-leave-to {
+            opacity: 0;
+            margin-left: -100%;
+        }
+    </style>
+    <!-- <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>
+        // VConsole 默认会挂载到 `window.VConsole` 上
+        var vConsole = new window.VConsole();
+    </script> -->
+    <script type="text/javascript">
+        (function () {
+            // 启动默认是1，因为html里遮罩默认是开启的
+            let layers = 1;
+            window.hideOverallLoading = () => {
+                let loading = document.getElementById('system-loading');
+                layers--;
+                if (layers <= 0) {
+                    loading.style.display = 'none';
+                    layers = 0;
+                }
+            };
+            window.showOverallLoading = () => {
+                let loading = document.getElementById('system-loading');
+                layers++;
+                if (layers <= 0) {
+                    layers = 1;
+                }
+                loading.style.display = 'block';
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "./3rd/vue@3.3.4/dist/vue.esm-browser.prod.js",
+                "vue-i18n":"./3rd/vue-i18n@9.4.1/dist/vue-i18n.esm-browser.prod.js",
+                "view-ui-plus":"./3rd/view-ui-plus@1.3.14/dist/viewuiplus.min.esm.js"
+            }
+        }
+      </script>
+    <script type="text/javascript">
+        (function () {
+            // 启动默认是1，因为html里遮罩默认是开启的
+            let layers = 1;
+            window.hideOverallLoading = () => {
+                let loading = document.getElementById('system-loading');
+                layers--;
+                if (layers <= 0) {
+                    loading.style.display = 'none';
+                    layers = 0;
+                }
+            };
+            window.showOverallLoading = () => {
+                let loading = document.getElementById('system-loading');
+                layers++;
+                if (layers <= 0) {
+                    layers = 1;
+                }
+                loading.style.display = 'block';
+            }
+        })();
+    </script>
+    <div id="system-loading">
+        <div class="loader ns"></div>
+    </div>
+    <div id="openblock" style="display: none;">
+        <layout style="height:100%">
+            <i-header id="header" class="layout-header ns"
+                :style="{height:'35px',paddingLeft:'45px',zIndex:'1000',color:'white'}">
+                <div v-for="comp in toolbarItems" :key="comp.name" class="toolbarItem">
+                    <component :is="comp.component" :data="comp.componentOptions"></component>
+                </div>
+                <projectname></projectname>
+                <div class="toolbar-right">
+                    <dropdown placement="bottom-end" trigger="click">
+                        <a href="javascript:void(0)">
+                            <icon type="ios-share-alt" size="25" />
+                        </a>
+                        <template #list>
+                            <dropdown-menu>
+                                <dropdown-item>
+                                    <a class="headerBtn" @click="exportProjectZip">
+                                        <icon type="md-cloud-download" size="25"></icon>
+                                        {{$t("导出完整工程")}}
+                                    </a>
+                                </dropdown-item>
+                                <dropdown-item>
+                                    <a class="headerBtn" @click="importProjectZip">
+                                        <icon type="md-cloud-upload" size="25"></icon>
+                                        {{$t("导入完整工程")}}
+                                    </a>
+                                </dropdown-item>
+                            </dropdown-menu>
+                        </template>
+                    </dropdown>
+                    <div v-for="comp in rightToolbarItems" :key="comp.name" class="toolbarItem">
+                        <component :is="comp.component" :data="comp.componentOptions"></component>
+                    </div>
+                </div>
+            </i-header>
+            <layout>
+                <sider id="side1" class="ns" width="40" hide-trigger>
+                    <tooltip v-for="item in siders" :key="item.component" :content="item.name" placement="right"
+                        :delay="200">
+                        <a v-bind:class="{siderOpened:item.component==openedSider}"
+                            @click="triggleSider(item.component)">
+                            <icon :type="item.icon" />
+                        </a>
+                    </tooltip>
+                    <div id="siderBottom">
+                        <tooltip :content="$t(btn.name)" placement="right" v-for="btn in siderBottomBottons"
+                            :key="btn.name">
+                            <a @click="btn.onClick">
+                                <icon :type="btn.icon"></icon>
+                            </a>
+                        </tooltip>
+                    </div>
+                </sider>
+                <i-content id="mainContent" class="layout-content ns">
+
+                    <div id="contentTabs">
+                        <tabs v-model="showingTabName" type="line" size="small" :animated="false" :capture-focus="true">
+                            <tab-pane v-for="(tab,index) in tabs" :key="tab.name" :label="tab.label" :name="tab.name"
+                                :capture-focus="true">
+                                <div :id="'tabContent-'+tab.name" class="tabContent">
+                                    {{tab.name}}
+                                </div>
+                            </tab-pane>
+                        </tabs>
+                    </div>
+                    <Transition v-for="item in siders" name="sider">
+                        <div v-if="(!item.isEnabled) || $root[item.isEnabled]" v-show="openedSider==item.component"
+                            id="leftsider-flyout" style="top:-100%;position: relative;" class="ns">
+                            <a id="leftsider-flyout-close-mask" @click="closeSider"></a>
+                            <!-- <logic class="siderPanel"></logic> -->
+                            <component :is="item.component" class="siderPanel"></component>
+                        </div>
+                    </Transition>
+                    <errorpanel></errorpanel>
+                </i-content>
+            </layout>
+            <Footer class="layout-footer">
+                <component v-for="comp in footerComponents" :key="comp" :is="comp"></component>
+            </Footer>
+        </layout>
+        <template v-for="win in modalWindows" :key="win.id">
+            <Modal :id="'modal-'+win.id" v-model="win.display" :title="win.title" :closable="win.closable"
+                :mask-closable="win.maskClosable" :draggable="win.draggable" :sticky="win.sticky"
+                :sticky-distance="win.stickyDistance" :mask="win.mask" :width="win.width" :footer-hide="true"
+                :before-close="win.beforeClose">
+                <div :id="'modal-content-'+win.id">
+                    <template v-if="win.component">
+                        <component :ref="'modal-'+win.id" :is="win.component" :data="win.componentOptions" :modal="win">
+                        </component>
+                    </template>
+                </div>
+            </Modal>
+        </template>
+        <template v-for="c in customElements" :key="c.id">
+            <component :is="c.component" :ref="'customElement-' + c.id"></component>
+        </template>
+    </div>
+    <script src="core/ub/compiler/AST/SObject/Serializable.js"></script>
+    <script src="core/3rd/axios.min.js"></script>
+    <script src="js/fileOD.js"></script>
+    <script src="3rd/echarts.min.js"></script>
+    <script src="3rd/moment-with-locales.js"></script>
+    <!-- <script src="3rd/vue@3.3.4/dist/vue.global.prod.js"></script> -->
+    <!-- <script src="3rd/vue-i18n@9.2.2/dist/vue-i18n.global.prod.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="3rd/view-ui-plus@1.3.14/dist/styles/viewuiplus.css">
+    <!-- <script type="text/javascript" src="3rd/view-ui-plus@1.3.14/dist/viewuiplus.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="style/index2.css">
+    <script src="3rd/commonmark.js"></script>
+    <script src="3rd/dom-to-image.min.js"></script>
+    <script src="core/ub/OpenBlock.js"></script>
+    <script src="js/asyncprompt.js"></script>
+    <script type="module" src="js/index.mjs"></script>
+    <script type="module" src="js/htmls/srceditor/srceditor.js"></script>
+    <script type="module" src="js/htmls/dataviewer/DataViewer.mjs"></script>
+    <script type="module" src="js/htmls/searchblock/searchblock.js"></script>
+    <script type="module" src="../iframeconnector/network.js"></script>
+</body>
+
+</html>

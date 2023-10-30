@@ -1,0 +1,28 @@
+<div class="dataViewer" :id="sn">
+  <!-- <Page :current="page.current" :page-size="page.size" :page-size-opts="page.sizeOpt"
+    :total="Object.keys(compiled).length" size="small" show-elevator show-sizer show-total @on-change="onpagechange"
+    @on-page-size-change="onpagesizechange" /> -->
+  <table style="user-select: text;">
+    <thead>
+      <tr>
+        <th v-for="col in ast.fields">
+          {{col.name}}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <template v-for="(col,colIdx) in (compiled)" v-bind:item="col" v-bind:index="colIdx">
+        <tr>
+          <td v-for="fld in ast.fields">
+            <!-- {{col}},{{colIdx}} -->
+            <component v-bind:is="fld.component()" :value="col" :field="fld"></component>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+
+  <!-- <Page :current="page.current" :page-size="page.size" :page-size-opts="page.sizeOpt"
+    :total="Object.keys(compiled).length" size="small" show-elevator show-sizer show-total @on-change="onpagechange"
+    @on-page-size-change="onpagesizechange" /> -->
+</div>

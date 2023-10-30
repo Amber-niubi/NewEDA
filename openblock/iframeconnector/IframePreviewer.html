@@ -1,0 +1,119 @@
+<Modal v-model="modal" :class="modalClasses" :width="tool?style.widthWithDev:style.width" :mask="false" sticky
+    footer-hide draggable @on-visible-change="onVisibleChange">
+    <template #header>
+        <p>
+            <Space>
+                <span>{{$t(title)+':'+id}}</span>
+                <tooltip :content="$t('设为封面')" :delay="500" placement="top">
+                    <i-button size="small" icon="ios-image" style="height:18px;font-size:12px;margin-bottom:4px;"
+                        @click="saveAsThumbnail">
+                    </i-button>
+                </tooltip>
+                <tooltip :content="$t('全屏')" :delay="500" placement="top">
+                    <i-button size="small" icon="ios-expand" style="height:18px;font-size:12px;margin-bottom:4px;"
+                        @click="requestFullScreen">
+                    </i-button>
+                </tooltip>
+                <tooltip :content="$t('扩展组件')" :delay="500" placement="top" v-if="components.length>0">
+                    <i-button size="small" icon="ios-calculator" style="height:18px;font-size:12px;margin-bottom:4px;"
+                        @click="tool=tool==='component'?null:'component';msg_ui=null">
+                    </i-button>
+                </tooltip>
+                <tooltip :content="$t('开发者工具')" :delay="500" placement="top">
+                    <i-button size="small" icon="ios-hammer" style="height:18px;font-size:12px;margin-bottom:4px;"
+                        @click="tool=tool==='devTool'?null:'devTool';msg_ui=null">
+                        <Badge v-if="msg_ui" :status="msg_ui.stype">
+                        </Badge>
+                    </i-button>
+                </tooltip>
+                <!-- <tooltip :content="$t('检视')" :delay="500" placement="top">
+                <i-button size="small" style="height:18px;font-size:12px;margin-bottom:4px;"
+                    @click="tool=tool==='Inspector'?null:'Inspector'">
+                    <Icon type="ios-eye" />
+                </i-button>
+            </tooltip> -->
+            </Space>
+        </p>
+    </template>
+
+    <table style="border:0;padding:0;margin:0;">
+        <tr style="border:0;padding:0;margin:0;">
+            <td style="border:0;padding:0;margin:0;width:375px;vertical-align:top;">
+                <!-- <Alert v-if="msg_ui" :type="msg_ui.stype">
+                    <Icon v-if="msg_ui.type==='usr'" type="md-person" />
+                    <Icon v-else="msg_ui.type==='sys'" type="md-cog" />
+                    <a @click="tableCell(msg_ui)">
+                        {{$t(msg_ui.content)}}
+                    </a>
+                </Alert> -->
+                <div class="jspv_wrap" :style="style">
+                    <iframe ref="iframe" class="jsprevieweriframe" :style="iframeStyle" scrolling="no" :src="url" />
+                    <div class="jspv_wrap_mask" :style="maskStyle" @click="onClickIframeMask"></div>
+                </div>
+            </td>
+            <Tabs type="card" v-show="tool==='component' && components.length>0">
+                <TabPane v-for="comp in components" :label="$t(comp.name)">
+                    <component :is="comp.component" :props="comp.props" :scene="scene" :iframe="$refs.iframe">
+                    </component>
+                </TabPane>
+            </Tabs>
+            <td v-show="tool==='devTool'"
+                style="width:300px;overflow:auto;border:0;padding:10px;margin:0;vertical-align:top;">
+                <div style="width:100%;overflow:auto;">
+                    <select name="screen" class="screen-select" ref="jsprevieweriframe_screen"
+                        @change="changeScreen($event)">
+                        <option value="666px">1333 9:16</option>
+                        <option value="640px">1280</option>
+                        <option selected value="600px">1200 10:16</option>
+                        <option value="500px">1000 4:3</option>
+                        <option value="375px">750 1:1</option>
+                        <option value="281px">562 3:4</option>
+                        <option value="234px">468 16:10</option>
+                        <option value="210px">421 16:9</option>
+                    </select>
+                    <tooltip :content="$t('重启')" :delay="500" placement="top">
+                        <i-button size="small" @click="restart">
+                            <Icon type="ios-refresh" />
+                        </i-button>
+                    </tooltip>
+                    <!-- <tooltip :content="$t('显示日志')" :delay="500">
+       <input type="checkbox" checked @change="showLogChange" v-bind="showLog"/>
+       </tooltip> -->
+                    <tooltip :content="$t('清除日志')" :delay="500" placement="top">
+                        <i-button size="small" @click="clearLog">
+                            <Icon type="ios-trash" />
+                        </i-button>
+                    </tooltip>
+                    <tooltip :content="$t('自动滚动')" :delay="500" placement="top">
+                        <input type="checkbox" checked @change="toggleFollowNewLog" v-bind="followNewLog" />
+                    </tooltip>
+                    {{$t("Grid")}}
+                    <i-input number @on-change="gridChange" size="small" style="width:40px" v-model="gridX" />
+                    :
+                    <i-input number @on-change="gridChange" size="small" style="width:40px" v-model="gridY" />
+                    <span style="display:inline-block;width:30px">{{mousePosition.x}}</span>
+                    ,
+                    <span style="display:inline-block;width:30px">{{mousePosition.y}}</span>
+                    <br />
+                    <tooltip :delay="500" placement="top">
+                        <template #content>
+                            <div>
+                                <p>收集日志等级</p>
+                                <p><i>数字越小越详细，对性能影响越大。</i></p>
+                            </div>
+                        </template>
+                        {{$t("用户")}}
+                        <i-input number @on-change="logLevelChange" size="small" style="width:40px"
+                            v-model="usrLogLevel" />
+                        {{$t("系统")}}
+                        <i-input number @on-change="logLevelChange" size="small" style="width:40px"
+                            v-model="sysLogLevel" />
+                    </tooltip>
+                    <div ref="logDiv" class="logDiv" style="height:500px;width:100%;overflow:auto;">
+                        <i-table size="small" :stripe="true" :columns="logDivColumns" :data="logList"></i-table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</Modal>

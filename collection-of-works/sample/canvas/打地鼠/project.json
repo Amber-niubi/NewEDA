@@ -1,0 +1,10 @@
+{
+    "src": [
+        "src/Start.xs",
+        "src/UI组件.xs"
+    ],
+    "assets":[
+        "assets/蹦蹦吹牛.png",
+        "assets/forest-6765636_960_720.jpg"
+    ]
+}

@@ -1,0 +1,43 @@
+<div>
+  <div class="ns" style="height: 33px; font-size: 22px;">
+    {{$t('数据')}}
+    <tooltip :content="$t('导入Excel')" :delay="1000" theme="light">
+      <i-button size="small" style="margin-left: 15px;" @click="importData">
+        <icon type="ios-cloud-upload-outline" size="16"></icon>
+      </i-button>
+    </tooltip>
+
+    <poptip confirm :title="$t('是否清除所有数据?')" @on-ok="clearData">
+      <i-button size="small" style="margin-left: 15px;">
+        <Icon type="ios-trash-outline" size="14" />
+      </i-button>
+    </poptip>
+  </div>
+  <Divider style="margin:5px 0;" orientation="left">结构数据</Divider>
+  <div id="dataTableList">
+    <Card v-for="(tableName , index) in Object.keys(compiledData)" class="logicCard"
+      style="width: 330px;overflow: hidden;">
+      <a @click="openDataTab(tableName)">
+        <span style="word-break: keep-all; white-space: nowrap;">
+          <icon type="ios-cube" size="18"></icon>
+          {{tableName}}
+        </span>
+      </a>
+    </Card>
+  </div>
+  <Divider style="margin:5px 0;" orientation="left">原始数据</Divider>
+  <div>
+    <Card v-for="file in files" class="logicCard" style="width:215px;overflow:hidden;cursor:pointer;">
+      <div style="display:block;width:100%;height:100%;margin:0;">
+        <span @click="downloadFile(file)">
+          <Icon type="md-bookmarks" size="18" />{{file}}
+        </span>
+        <poptip style="display:block;float:right;" confirm :title="$t('是否删除文件?')" @on-ok="removeFile(file)" transfer>
+          <a>
+            <Icon type="ios-trash-outline" size="20" color="red" />
+          </a>
+        </poptip>
+      </div>
+    </Card>
+  </div>
+</div>

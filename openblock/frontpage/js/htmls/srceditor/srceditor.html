@@ -1,0 +1,39 @@
+<div>
+    <table style="margin-bottom:50px;">
+        <tr>
+            <td>名称</td>
+            <td><input type="text" v-model="data.createVarInfo.name" id="newVar_name" />
+            </td>
+        </tr>
+        <tr>
+            <td>类型</td>
+            <td>
+                <auto-complete v-model="data.createVarInfo.type" :data="data.createVarInfo.baseData"
+                    @on-search="avalibleVarTypes" @on-change="avalibleVarTypes" placeholder="input here"
+                    style="width:200px"></auto-complete>
+            </td>
+        </tr>
+        <tr>
+            <td>集合</td>
+            <td>
+                <radio-group v-model="data.createVarInfo.wrap">
+                    <radio label="">
+                        <span>无</span>
+                    </radio>
+                    <radio label="list">
+                        <span>列表</span>
+                    </radio>
+                    <radio label="string_map">
+                        <span>文字映射</span>
+                    </radio>
+                    <radio label="integer_map">
+                        <span>整数映射</span>
+                    </radio>
+                </radio-group>
+            </td>
+        </tr>
+    </table>
+    <i-button style="position:absolute;bottom:15px;right:90px;" type="text" @click="modal.close">{{$t('取消')}}</i-button>
+    <i-button style="position:absolute;bottom:15px;right:15px;" type="primary" @click="apply">{{$t('确定')}}
+    </i-button>
+</div>

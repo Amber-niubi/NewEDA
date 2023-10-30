@@ -1,0 +1,153 @@
+/**
+*作者：奕尘教育，未经允许禁止商用。邮件联系：public@1ccode.com
+*/
+
+*{padding: 0;margin: 0;list-style: none;text-decoration: none;}
+
+
+nav{
+    position: fixed;
+    z-index: 999;
+    width: 100%;
+    height: 120px;
+    background-image: linear-gradient( 135deg,  #f9e99b 10%,#926a32  100%);
+}
+
+nav #logo{
+    position: absolute;
+    left: 10px;
+}
+
+nav ul{
+    float: right;
+    margin-top: 33px;
+    margin-right: 20px;
+
+}
+nav ul li{
+    display:inline-block;
+    font-size: 40px;
+    font-family:LiSu;
+    padding: 10px;
+    border-radius: 10px;
+   
+}
+nav ul li:hover{
+    background-color: rgba(0,0,0,0.5);
+}
+nav ul li a{
+    color: #000;
+    
+}
+
+#logo .lion{
+    position: absolute;
+    margin-top: 25px;
+    margin-left: 10px;
+    z-index: 2;
+    height: 80px;
+}
+
+#logo .cloud{
+    margin-top:80px;
+    z-index: 66;
+    position: absolute;
+    height: 80px;
+    
+}
+
+#logo .text{
+    position: absolute;
+    width: 100px;
+    top: 20px;
+    left: 150px;
+    font-family:LiSu;
+    font-size: 55px;
+
+}
+span:nth-child(1){
+    font-size: 40px;
+}
+
+
+/**/
+main{
+    position: relative;
+    top: 140px;
+    width: 100%;
+}
+main .info{
+    top: 20px;
+    padding-top: 40px;
+    width: 100%;
+    height: 150px;
+    background: url("./public/images/SVG/cloud-2.svg") no-repeat;
+    background-size: 300px;
+    background-position: center;
+    
+}
+main  .cloud-2{
+    
+    width: 300px;
+    height: 90px;
+    margin: 0 auto;
+}
+
+#YClist{
+    width: 100%;
+}
+#YClist li{
+    position: relative;
+    width: 284px;
+    height: 284x;
+    display: inline-block;
+    margin: 120px  40px;
+
+}
+#YClist li a{
+    width: 100%;
+    position: relative;
+    display: inline-block;
+    
+}
+.YClist-img-cloud{
+    margin-top: 40px;
+    width: 284px;
+    height: 202px;
+    position: absolute;
+    z-index: 99;
+
+}
+.YClist-img{
+    position: absolute;
+    width: 200px;
+    height: 125px;
+    margin-top:22px;
+    margin-left: 40px;
+    border-radius: 10px;
+    border:2px solid #926a32;
+}
+
+@media screen and (max-width: 580px) { 
+    nav ul span{
+        display: block;
+    }
+    nav ul{
+        position: relative;
+    }
+    nav ul li{
+        position: absolute;
+        display: block;
+        display: none !important;
+        background-color: #000;
+    }
+  }
+
+  @media screen and (min-width: 580px) { 
+    nav ul span{
+        display: none;
+    }
+    nav ul li{
+        display: inline-block;
+    }
+  }

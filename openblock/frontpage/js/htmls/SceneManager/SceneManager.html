@@ -1,0 +1,163 @@
+<Dropdown v-show="manager.availableScenes.length>0" :transfer="true" placement="bottom-start" trigger="click"
+    :title="$t('添加场景')">
+    <template #list>
+        <DropdownMenu>
+            <DropdownItem v-for="s in manager.availableScenes" :key="s.name" @click="newScene(s)" style="display:block">
+                <span>{{$t(s.name)}}</span>
+                <span style="color:whitesmoke">{{s.maxCount}}</span>
+            </DropdownItem>
+        </DropdownMenu>
+    </template>
+    <Icon type="md-add-circle" style="margin-right:8px;cursor: pointer;" />
+</Dropdown>
+<template v-if="manager.scenes.length>selectedSceneIdx">
+    <Transition name="move-up">
+        <ButtonGroup size="small" style="font-size:12px" v-show="!showSceneList || manager.scenes.length==1">
+            <i-button v-if="manager.scenes.length>1" @click="toggleList">
+                <span :style="{marginTop:'-14px'}" ref="sceneBtns">
+                    <Icon type="md-arrow-dropdown" />
+                </span>
+            </i-button>
+            <i-Button v-for="run in runMethods(manager.scenes[selectedSceneIdx])"
+                :style="{backgroundColor:manager.scenes[selectedSceneIdx].color,lineHeight:'0'}" size="small"
+                @click="runProject(run.run,manager.scenes[selectedSceneIdx])" :title="$t(run.name)">
+                <span :style="{color:$toFontColor(manager.scenes[selectedSceneIdx].color),marginTop:'-14px'}">
+                    <Icon v-if="run.icon" :type="run.icon" />
+                    <span v-if="run.showName" style="margin-left:5px">{{run.name}}</span>
+                </span>
+            </i-Button>
+            <i-Button size="small" @click="editScene_(manager.scenes[selectedSceneIdx])" :title="$t('设置')"
+                :style="{backgroundColor:manager.scenes[selectedSceneIdx].color,lineHeight:'0'}">
+                <span :style="{color:$toFontColor(manager.scenes[selectedSceneIdx].color),marginTop:'-14px'}">
+                    <Icon type="md-settings" />
+                </span>
+            </i-Button>
+            <i-Button disabled size="small" :style="{backgroundColor:manager.scenes[selectedSceneIdx].color,lineHeight:'0'}">
+                <span :style="{color:$toFontColor(manager.scenes[selectedSceneIdx].color),marginTop:'-14px'}">
+                    {{manager.scenes[selectedSceneIdx].name}}
+                </span>
+            </i-Button>
+        </ButtonGroup>
+    </Transition>
+    <Transition name="move-up">
+        <card class="scenemanager-list-card" :style="{left:sceneListCardXOffset+'px'}" :padding="0"
+            v-show="showSceneList && manager.scenes.length>1">
+            <div style="margin-left:5px;">
+                <div>
+                    <ButtonGroup size="small" style="font-size:12px">
+                        <i-button @click="hideList" size="small">
+                            <span :style="{lineHeight:'0'}">
+                                <Icon type="md-arrow-dropup" />
+                            </span>
+                        </i-button>
+                        <i-Button v-for="run in runMethods(manager.scenes[selectedSceneIdx])"
+                            :style="{backgroundColor:manager.scenes[selectedSceneIdx].color}" size="small"
+                            :disabled="running.has(run.run)"
+                            @click="runProject(run.run,manager.scenes[selectedSceneIdx])" :title="$t(run.name)">
+                            <span
+                                :style="{color:$toFontColor(manager.scenes[selectedSceneIdx].color)}">
+                                <Icon v-if="run.icon" :type="run.icon" />
+                                <span v-if="run.showName" style="margin-left:5px">{{run.name}}</span>
+                            </span>
+                        </i-Button>
+                        <i-Button size="small" @click="editScene_(manager.scenes[selectedSceneIdx])" :title="$t('设置')"
+                            :style="{backgroundColor:manager.scenes[selectedSceneIdx].color,lineHeight:'0'}">
+                            <span
+                                :style="{color:$toFontColor(manager.scenes[selectedSceneIdx].color)}">
+                                <Icon type="md-settings" />
+                            </span>
+                        </i-Button>
+                    </ButtonGroup>
+                    <span class="scenemanager-list-name">{{manager.scenes[selectedSceneIdx].name}}</span>
+                    <span style="margin-right:5px;">
+
+                        <Poptip confirm :title="$t('删除场景？')" transfer
+                            @on-ok="removeScene(manager.scenes[selectedSceneIdx])">
+                            <Icon type="md-remove-circle" color="#cc0000" />
+                        </Poptip>
+                    </span>
+                </div>
+                <template v-for="(s,i) in manager.scenes" :key="s.id">
+                    <div v-if="i!=selectedSceneIdx">
+                        <ButtonGroup size="small" style="font-size:12px;">
+                            <i-Button size="small" @click="moveToTop(i)" :title="$t('置顶')">
+                                <span style="margin-top:-14px">
+                                    <Icon type="md-arrow-round-up" />
+                                </span>
+                            </i-Button>
+                            <i-Button v-for="run in runMethods(s)" :style="{backgroundColor:s.color,lineHeight:'0'}" size="small"
+                                @click="runProject(run.run,s)" :title="$t(run.name)">
+                                <span :style="{color:$toFontColor(s.color)}">
+                                    <Icon v-if="run.icon" :type="run.icon" />
+                                    <span v-if="run.showName" style="margin-left:5px">{{run.name}}</span>
+                                </span>
+                            </i-Button>
+                            <i-Button size="small" @click="editScene_(s)" :style="{backgroundColor:s.color,lineHeight:'0'}"
+                                :title="$t('设置')">
+                                <span :style="{color:$toFontColor(s.color)}">
+                                    <Icon type="md-settings" />
+                                </span>
+                            </i-Button>
+                        </ButtonGroup>
+                        <span class="scenemanager-list-name">{{s.name}}</span>
+                        <span style="margin-right:5px;">
+
+                            <Poptip confirm :title="$t('删除场景？')" transfer @on-ok="removeScene(s)">
+                                <Icon type="md-remove-circle" color="#cc0000" />
+                            </Poptip>
+                        </span>
+                    </div>
+                </template>
+            </div>
+        </card>
+    </Transition>
+</template>
+<Modal v-model="editingScene" v-if="editingScene" :title="isExist(editedScene.id)?$t('场景设置'):$t('添加场景')" width="80%"
+    footer-hide>
+    <i-form :model="editedScene" label-position="right" :label-width="80" class="editedScene" @submit.native.prevent>
+        <FormItem prop="env" :label="$t('环境')">
+            {{$t(editedScene.env)}}
+        </FormItem>
+        <FormItem prop="name" :label="$t('名称')">
+            <i-input v-model="editedScene.name" :placeholder="$t('输入名称')">
+            </i-input>
+            <p style="color:red;" v-if="nameError()">{{$t(nameError() || '')}}</p>
+        </FormItem>
+        <FormItem prop="color" :label="$t('颜色')">
+            <Poptip trigger="click" placement="bottom-start" v-model="showColorSelector">
+                <span>
+                    <span class="sceneColor" :style="{backgroundColor:editedScene.color,color:editedScene.color}">
+                        <span class="invert"
+                            :style="{color:$toFontColor(editedScene.color)}">{{selectedColorName}}</span>
+                    </span>
+                </span>
+                <template #content>
+                    <span style="font-weight:bold;">{{$t('选择颜色')}}</span>
+                    <a style="font-weight:bold;float:right;margin-right:10px"
+                        @click="showColorSelector=false">{{$t('关闭')}}</a>
+                    <Divider style="margin: 10px 0;" />
+                    <div class="colorPicker">
+                        <template v-for="(c,i) in colors" :key="c">
+                            <div>
+                                <div :class="['sceneColor',c==editedScene.color?'selected':'']"
+                                    :style="{backgroundColor:c,color:c}" @click="changeColor(c,i)"
+                                    :title="colorNames[i]">
+                                    <span class="invert"
+                                        :style="c==editedScene.color?{fontWeight:'bold',color:$toFontColor(c)}:{lineHeight: 1.5,color:$toFontColor(c)}">{{colorNames[i]}}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </Poptip>
+            <span style="cursor: pointer;" @click="randomColor">
+                <Icon type="md-sync" />
+            </span>
+        </FormItem>
+    </i-form>
+    <div style="text-align: right;" slot="footer">
+        <Button type="text" @click="finish(false,rawScene)">取消</Button>
+        <Button type="primary" :disabled="hasError()" style="margin-left:8px"
+            @click="finish(true,editedScene)">确定</Button>
+    </div>
+</Modal>

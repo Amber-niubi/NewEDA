@@ -1,0 +1,9 @@
+[
+    {
+        "group": "message",
+        "tests": [
+            "delayPrint",
+            "messageArgument"
+        ]
+    }
+]

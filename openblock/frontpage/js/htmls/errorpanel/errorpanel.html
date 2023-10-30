@@ -1,0 +1,18 @@
+<div id="rbToolbox">
+    <i-button id="errorBtn" v-if="errors.length>0" type="error" shape="circle" icon="ios-bug"
+        @click="showErrorWindow=!showErrorWindow"></i-button>
+</div>
+<Card v-if="showErrorWindow && errors.length>0" id="errorWindow">
+    <template #title>
+        <p class="ns">
+            <Icon type="ios-bug-outline"></Icon>
+            错误
+        </p>
+    </template>
+    <div id="errorList">
+        <p v-for="err in errors">
+            <a class="error"
+                @click="highlightErrBlock(err)">{{err.src.name}}:{{err.err.fsm}}:{{err.err.state}}{{err.err.func}}:{{err.err.message}}</a>
+        </p>
+    </div>
+</Card>

@@ -1,0 +1,22 @@
+{
+  "name": "1ccode",
+  "version": "1.0.0",
+  "description": "奕尘教育提供狮偶相关解决方案，邮件public@1ccode.com",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/yi-chen-education/collection-of-works.git"
+  },
+  "keywords": [
+    "狮偶"
+  ],
+  "author": "奕尘教育",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql": "^2.18.1"
+  }
+}

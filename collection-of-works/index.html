@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="为教育机构提供狮偶相关解决方案。">
+    <meta name="keywords" content="狮偶">
+    <meta name="author" content="奕尘教育">
+    <title>奕尘教育</title>
+    <!--作者：奕尘教育，未经允许禁止商用。邮件联系：public@1ccode.com-->
+    <link href="./index.css" rel="stylesheet">
+    <script src="./public/js/jquery.min.js"></script>
+
+</head>
+<body>
+    <nav>
+        <div id="logo">
+            <img class="lion" src="./public/images/SVG/logo.svg" alt="狮">
+            <img class="cloud" src="./public/images/SVG/cloud-1.png" alt="云-1">
+            <div class="text">
+                <span>奕</span><span>尘</span>       
+            </div>
+        </div>
+        <ul>
+                
+            <span>
+                <?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.94971 11.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.94971 23.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.94971 35.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <li>
+                <a href=""><?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 43H39L23 17L7 43Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.0769 25L23 28L27.9231 25" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 17V12V4" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M35 4H23V12H35L32 8L35 4Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>社区</a>
+                
+            </li>
+             <li>
+                <a href=""><?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10C4 8.89543 4.89543 8 6 8H34C35.1046 8 36 8.89543 36 10V19L44 13V36L36 30V38C36 39.1046 35.1046 40 34 40H6C4.89543 40 4 39.1046 4 38V10Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 16V20" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 14V22" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16V20" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>视频</a>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        
+        <div class="info">
+            
+        </div>
+        <ul id="YClist"></ul>
+    </main>
+   
+    <footer>
+        <img>
+    </footer>
+        
+    <script>
+        function openProject(projPath) {
+            let IDE_PATH = '../openblock/';
+            if (projPath.endsWith('json')) {
+                let url =
+                    IDE_PATH +
+                    'frontpage/index.html#%7B%22proj%22:%22/testing/' +
+                    projPath +
+                    '%22%7D'
+                window.open(url);
+            } else if (projPath.endsWith('.zip') || projPath.endsWith('.obp')) {
+                let url =
+                    IDE_PATH +
+                    'frontpage/index.html#%7B%22srczip%22:%22/testing/' +
+                    projPath +
+                    '%22%7D'
+                window.open(url);
+            }
+        }
+
+        function makeURL(projPath) {
+            let IDE_PATH = '../openblock/';
+            if (projPath.endsWith('.json')) {
+                let url =
+                    IDE_PATH +
+                    'frontpage/index.html#%7B%22proj%22:%22/collection-of-works/' +
+                    projPath +
+                    '%22%7D'
+                return (url);
+            } else if (projPath.endsWith('.zip') || projPath.endsWith('.obp')) {
+                let url =
+                    IDE_PATH +
+                    'frontpage/index.html#%7B%22srczip%22:%22/collection-of-works/' +
+                    projPath +
+                    '%22%7D'
+                return (url);
+            }
+        }
+        $(document).ready(function () {
+            let htmlstr = "";
+            let imgstr = '';
+            let cloud = '<img class="YClist-img-cloud" src="./public/images/SVG/project.svg">';
+            $.getJSON("settings.json", function(result){
+               let txt = result;
+
+               for (let i in txt) {
+                
+                if (txt[i]['img']) {
+                    //设定的图片
+                    imgstr = '<img src="' + txt[i]['img'] + '" class="YClist-img" >';
+                } else {
+                    //默认图片
+                    imgstr = '<img class="YClist-img" src="./sample/static/images/nothing.svg">';
+                }
+                htmlstr += '<li><a target="_Blank" href="' + makeURL(txt[i].url) + '">' + cloud + '' + imgstr + '</a></li>';
+
+               //<div>' + txt[i]['name'] + '</div>
+            }
+            
+
+            $('#YClist').html(htmlstr);
+            $(window).scroll(function () {
+                var $scroll = $(document).scrollTop()
+                if ($scroll > 30) {
+                    $(".scrollTo").css('display', '');
+                } else {
+                    $(".scrollTo").css('display', 'none');
+                }
+
+            });
+            $('.scrollTo').click(function () {
+                scrollTo(0, 0);
+            })
+
+                
+            })
+            //console.log(txt);
+            
+           
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+  "importLib":["window.h"],
+  "srcList":[
+  {
+      "name": "Start",
+      "fsms": [
+          {
+              "name": "Main",
+              "states": [
+                  {
+                      "name": "状态",
+                      "functions": [],
+                      "eventHandlers": [
+                          {
+                              "name": "Start",
+                              "blockId": "$V]5U~[v]#tj.S$QE~_#",
+                              "body": {
+                                  "variables": [],
+                                  "instructions": [
+                                      {
+                                          "blockId": ",`ws]0Zz,XkkLl_Nx=4W",
+                                          "func": {
+                                              "name": "exit(0)",
+                                              "args": [],
+                                              "returnType": null,
+                                              "signature": "exit(0)()v",
+                                              "fullname": "exit(0)",
+                                              "scope": "global",
+                                              "libHash": "windows.h",
+                                              "libIndex": 0,
+                                              "libName": "windows.h",
+                                              "$__type": "FunctionDef"
+                                          },
+                                          "args": [],
+                                          "$__type": "VoidNativeCall"
+                                      }
+                                  ],
+                                  "$__type": "StatementDef"
+                              },
+                              "args": [],
+                              "returnType": null,
+                              "codename": "状态",
+                              "$__type": "EventHandlerDef"
+                          }
+                      ],
+                      "messageHandlers": [],
+                      "variables": [],
+                      "$__type": "StateDef"
+                  }
+              ],
+              "functions": [],
+              "variables": [],
+              "structs": [],
+              "$__type": "FSMDef"
+          }
+      ],
+      "functions": [],
+      "structs": [],
+      "env": [
+          "windows-c"
+      ],
+      "$__type": "ModuleDef"
+  }
+]}

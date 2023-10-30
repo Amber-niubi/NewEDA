@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>模拟器</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .log {
+            pointer-events: none;
+            font-size: 24px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            mix-blend-mode: difference;
+            color: #fff;
+        }
+
+        #stage {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="./normalize.css">
+</head>
+
+<body style="background-color: white;text-align: left;">
+    <script src="../../frontpage/core/3rd/axios.min.js"></script>
+    <script src="../../frontpage/js/asyncprompt.js"></script>
+
+    <script src="../../frontpage/3rd/echarts.min.js"></script>
+    <script src="../../frontpage/3rd/moment-with-locales.js"></script>
+    <script src="../../frontpage/3rd/vue@3.3.4/dist/vue.global.prod.js"></script>
+    <script src="../../frontpage/3rd/vue-i18n@9.2.2/dist/vue-i18n.global.prod.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../frontpage/3rd/view-ui-plus@1.3.14/dist/styles/viewuiplus.css">
+    <script type="text/javascript" src="../../frontpage/3rd/view-ui-plus@1.3.14/dist/viewuiplus.min.js"></script>
+    <script src="../../frontpage/3rd/commonmark.js"></script>
+    <script src="../../frontpage/3rd/dom-to-image.min.js"></script>
+
+    <script type="module" src="./js/jsruntime.ext.mjs"></script>
+    <script type="module" src="./js/index.mjs"></script>
+    <script type="text/javascript">
+    </script>
+</body>
+
+</html>

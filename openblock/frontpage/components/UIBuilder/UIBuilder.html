@@ -1,0 +1,112 @@
+<template>
+    <Modal id="uidesign" v-if="enabled" v-model="enabled" fullscreen footer-hide :mask="false" :closable="false">
+        <template #header>
+            <strong>
+                <span style="cursor: pointer;" @click="enabled=false">
+                    <Icon type="md-arrow-round-back" size="22" />
+                </span>
+                {{$t('UI设计')+'-'+scene.name}}
+            </strong>
+
+        </template>
+        <Row id="uidesign-panel">
+            <Col span="3">
+            <h3 style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                {{$t('组件库')}}</h3>
+            <Input v-model="searchText" search size="small" clearable :placeholder="$t('搜索')" />
+            <div v-if="searchText">
+                <template v-for="comp in Object.keys(supportedComponent)">
+                    <Button
+                        v-if="comp.toLowerCase().indexOf(searchText.toLowerCase())>=0 || $t('UI-'+comp).toLowerCase().indexOf(searchText.toLowerCase())>=0"
+                        class="ui-component-add-btn" size="small" @click="addComponent(comp)">
+                        {{$t('UI-'+comp)}}
+                        <Poptip placement="right" width="400" transfer trigger="hover">
+                            <Icon class="ui-component-add-info-btn" type="ios-information-circle-outline" />
+                            <template #content v-html>{{$t(supportedComponent[comp].info)}}</template>
+                        </Poptip>
+                    </Button>
+                </template>
+            </div>
+            <Collapse v-else simple accordion>
+                <Panel v-for="cat in category" :key="cat.name" :name="cat.name">
+                    {{$t('UI-'+cat.name)}}
+                    <template #content>
+                        <Button v-for="comp in cat.components" size="small" class="ui-component-add-btn"
+                            @click="addComponent(comp)">
+                            {{$t('UI-'+comp)}}
+                            <Poptip placement="right" width="400" transfer trigger="hover">
+                                <Icon class="ui-component-add-info-btn" type="ios-information-circle-outline" />
+                                <template #content v-html>{{$t(supportedComponent[comp].info)}}</template>
+                            </Poptip>
+                        </Button>
+                    </template>
+                </Panel>
+            </Collapse>
+            </Col>
+            <Col span="5">
+            <h3 style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                {{$t('大纲')}}</h3>
+
+            <Tree :data="page" @on-contextmenu="handleContextMenu" :render="renderContent"
+                @on-select-change="selectChanged">
+                <template #contextMenu>
+                    <DropdownItem @click="handleContextMenuEdit">编辑</DropdownItem>
+                    <DropdownItem @click="handleContextMenuDelete" style="color: #ed4014">删除</DropdownItem>
+                </template>
+            </Tree>
+            </Col>
+            <Col span="5">
+            <h3 style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                {{$t('模拟数据')}}</h3>
+            </Col>
+            <Col :span="isLandscape?11:6">
+            <h3 style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                {{$t('预览')}}</h3>
+            <div style="padding:5px;;">
+                <span @click="rotated=!rotated">
+                    <Icon v-if="isLandscape" type="md-tablet-landscape" />
+                    <Icon v-else type="md-tablet-portrait" />
+                </span>
+                {{$t('缩放')}}
+                <InputNumber size="small" style="width:100px" v-model="previewScale" :min="0.01" :max="3" :step="0.03"
+                    controls-outside :precision="2" />
+                <br v-if="!isLandscape" />
+                {{$t('宽')}}
+                <InputNumber size="small" style="width:100px" v-model="previewWidth" :min="300" :max="3000" :step="50"
+                    controls-outside :precision="0" />
+                {{$t('高')}}
+                <InputNumber size="small" style="width:100px" v-model="previewHeight" :min="300" :max="3000" :step="50"
+                    controls-outside :precision="0" />
+                <Dropdown transfer style="margin-left: 5px" trigger="click">
+                    <a href="javascript:void(0)">
+                        预置
+                        <Icon type="ios-arrow-down"></Icon>
+                    </a>
+                    <template #list>
+                        <DropdownMenu>
+                            <DropdownItem v-for="screen in predefinedScreen" @click="setScreen(screen)">
+                                {{screen.name}}({{screen.width}} × {{screen.height}})</DropdownItem>
+                        </DropdownMenu>
+                    </template>
+                </Dropdown>
+            </div>
+            <div :style="previewWrapperStyle">
+                <div :style="previewStyle">
+                    <!-- <UIBuilderRT :page="page"></UIBuilderRT> -->
+                    <iframe src="../jsruntime/VUE/index.html" style="height:100%;width:100%;border:1px solid black;"
+                        frameborder="1"></iframe>
+                </div>
+            </div>
+            <div v-if="isLandscape">
+                <h3
+                    style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                    {{$t('属性')}}</h3>
+            </div>
+            </Col>
+            <Col v-if="!isLandscape" span="5">
+            <h3 style="border-bottom: 1px solid rgb(220, 222, 226);height:35.8px;padding-top:8px;padding-left:20px;">
+                {{$t('属性')}}</h3>
+            </Col>
+        </Row>
+    </Modal>
+</template>

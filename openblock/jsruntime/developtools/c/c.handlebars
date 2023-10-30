@@ -1,0 +1,1838 @@
+/* C11 */
+/**
+ * @license
+ * Copyright 2021 Du Tian Wei
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ // TEMPLATE_HEADER_START
+ /* 逻辑代码 by 狮偶 */
+ // TEMPLATE_HEADER_END
+
+// TEMPLATE_LIBRARY_START
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdint.h>
+typedef uint64_t ULONGLONG;
+#if _WIN32
+#include <windows.h>
+#endif
+
+{{#> extInclude}}
+// NO extInclude partial
+{{/extInclude}}
+
+{{#each importLib}}
+#include "{{this}}"
+{{/each}}
+
+static void *_ob_t_calloc( size_t num, size_t size,const char* file,const char* func,unsigned long line ){
+	void* ptr = calloc(num,size);
+	printf("ob_t_calloc %zu %s %s %d\n",ptr,file,func,line);
+	return ptr;
+}
+#define ob_t_calloc( num, size ) _ob_t_calloc(num,size, __FILE__, __func__, __LINE__);
+static void _ob_t_free( void *ptr ,const char* file,const char* func,unsigned long line ){
+	printf("ob_t_free %zu %s %s %d\n",ptr,file,func,line);
+	free( ptr );
+}
+#define ob_t_free( ptr ) _ob_t_free(ptr, __FILE__, __func__, __LINE__);
+
+static int get_utf8_size(const unsigned char pInput)
+{
+    unsigned char c = pInput;
+    // 0xxxxxxx 返回0
+    // 10xxxxxx 不存在
+    // 110xxxxx 返回2
+    // 1110xxxx 返回3
+    // 11110xxx 返回4
+    // 111110xx 返回5
+    // 1111110x 返回6
+    if (c < 0x80)
+        return 0;
+    if (c >= 0x80 && c < 0xC0)
+        return -1;
+    if (c >= 0xC0 && c < 0xE0)
+        return 2;
+    if (c >= 0xE0 && c < 0xF0)
+        return 3;
+    if (c >= 0xF0 && c < 0xF8)
+        return 4;
+    if (c >= 0xF8 && c < 0xFC)
+        return 5;
+    if (c >= 0xFC)
+        return 6;
+    return 6;
+}
+
+/*****************************************************************************
+ * 将一个字符的UTF8编码转换成Unicode(UCS-2和UCS-4)编码.
+ *
+ * 参数:
+ *    pInput      指向输入缓冲区, 以UTF-8编码
+ *    Unic        指向输出缓冲区, 其保存的数据即是Unicode编码值,
+ *                类型为unsigned long .
+ *
+ * 返回值:
+ *    成功则返回该字符的UTF8编码所占用的字节数; 失败则返回0.
+ *
+ * 注意:
+ *     1. UTF8没有字节序问题, 但是Unicode有字节序要求;
+ *        字节序分为大端(Big Endian)和小端(Little Endian)两种;
+ *        在Intel处理器中采用小端法表示, 在此采用小端法表示. (低地址存低位)
+ ****************************************************************************/
+static int Utf8ToUnicode(const unsigned char *pInput, unsigned long *Unic)
+{
+    if (pInput == NULL && Unic == NULL)
+    {
+        return 0;
+    }
+    // b1 表示UTF-8编码的pInput中的高字节, b2 表示次高字节, ...
+    char b1, b2, b3, b4, b5, b6;
+    *Unic = 0x0; // 把 *Unic 初始化为全零
+    int utfbytes = get_utf8_size(*pInput);
+    unsigned char *pOutput = (unsigned char *)Unic;
+
+    switch (utfbytes)
+    {
+    case 0:
+        *pOutput = *pInput;
+        utfbytes += 1;
+        break;
+    case 2:
+        b1 = *pInput;
+        b2 = *(pInput + 1);
+        if ((b2 & 0xE0) != 0x80)
+            return 0;
+        *pOutput = (b1 << 6) + (b2 & 0x3F);
+        *(pOutput + 1) = (b1 >> 2) & 0x07;
+        break;
+    case 3:
+        b1 = *pInput;
+        b2 = *(pInput + 1);
+        b3 = *(pInput + 2);
+        if (((b2 & 0xC0) != 0x80) || ((b3 & 0xC0) != 0x80))
+            return 0;
+        *pOutput = (b2 << 6) + (b3 & 0x3F);
+        *(pOutput + 1) = (b1 << 4) + ((b2 >> 2) & 0x0F);
+        break;
+    case 4:
+        b1 = *pInput;
+        b2 = *(pInput + 1);
+        b3 = *(pInput + 2);
+        b4 = *(pInput + 3);
+        if (((b2 & 0xC0) != 0x80) || ((b3 & 0xC0) != 0x80) || ((b4 & 0xC0) != 0x80))
+            return 0;
+        *pOutput = (b3 << 6) + (b4 & 0x3F);
+        *(pOutput + 1) = (b2 << 4) + ((b3 >> 2) & 0x0F);
+        *(pOutput + 2) = ((b1 << 2) & 0x1C) + ((b2 >> 4) & 0x03);
+        break;
+    case 5:
+        b1 = *pInput;
+        b2 = *(pInput + 1);
+        b3 = *(pInput + 2);
+        b4 = *(pInput + 3);
+        b5 = *(pInput + 4);
+        if (((b2 & 0xC0) != 0x80) || ((b3 & 0xC0) != 0x80) || ((b4 & 0xC0) != 0x80) || ((b5 & 0xC0) != 0x80))
+            return 0;
+        *pOutput = (b4 << 6) + (b5 & 0x3F);
+        *(pOutput + 1) = (b3 << 4) + ((b4 >> 2) & 0x0F);
+        *(pOutput + 2) = (b2 << 2) + ((b3 >> 4) & 0x03);
+        *(pOutput + 3) = (b1 << 6);
+        break;
+    case 6:
+        b1 = *pInput;
+        b2 = *(pInput + 1);
+        b3 = *(pInput + 2);
+        b4 = *(pInput + 3);
+        b5 = *(pInput + 4);
+        b6 = *(pInput + 5);
+        if (((b2 & 0xC0) != 0x80) || ((b3 & 0xC0) != 0x80) || ((b4 & 0xC0) != 0x80) || ((b5 & 0xC0) != 0x80) || ((b6 & 0xC0) != 0x80))
+            return 0;
+        *pOutput = (b5 << 6) + (b6 & 0x3F);
+        *(pOutput + 1) = (b5 << 4) + ((b6 >> 2) & 0x0F);
+        *(pOutput + 2) = (b3 << 2) + ((b4 >> 4) & 0x03);
+        *(pOutput + 3) = ((b1 << 6) & 0x40) + (b2 & 0x3F);
+        break;
+    default:
+        return 0;
+        break;
+    }
+
+    return utfbytes;
+}
+
+/*****************************************************************************
+ * 将一个字符的Unicode(UCS-2和UCS-4)编码转换成UTF-8编码.
+ *
+ * 参数:
+ *    unic     字符的Unicode编码值
+ *    pOutput  指向输出的用于存储UTF8编码值的缓冲区的指针
+ *    outsize  pOutput缓冲的大小
+ *
+ * 返回值:
+ *    返回转换后的字符的UTF8编码所占的字节数, 如果出错则返回 0 .
+ *
+ * 注意:
+ *     1. UTF8没有字节序问题, 但是Unicode有字节序要求;
+ *        字节序分为大端(Big Endian)和小端(Little Endian)两种;
+ *        在Intel处理器中采用小端法表示, 在此采用小端法表示. (低地址存低位)
+ *     2. 请保证 pOutput 缓冲区有最少有 6 字节的空间大小!
+ ****************************************************************************/
+static int UnicodeToUtf8(unsigned long unic, unsigned char *pOutput, int outSize)
+{
+    if (pOutput == NULL)
+    {
+        return 0;
+    }
+    if (outSize >= 6)
+    {
+        return 0;
+    }
+
+    if (unic <= 0x0000007F)
+    {
+        // * U-00000000 - U-0000007F:  0xxxxxxx
+        *pOutput = (unic & 0x7F);
+        return 1;
+    }
+    else if (unic >= 0x00000080 && unic <= 0x000007FF)
+    {
+        // * U-00000080 - U-000007FF:  110xxxxx 10xxxxxx
+        *(pOutput + 1) = (unic & 0x3F) | 0x80;
+        *pOutput = ((unic >> 6) & 0x1F) | 0xC0;
+        return 2;
+    }
+    else if (unic >= 0x00000800 && unic <= 0x0000FFFF)
+    {
+        // * U-00000800 - U-0000FFFF:  1110xxxx 10xxxxxx 10xxxxxx
+        *(pOutput + 2) = (unic & 0x3F) | 0x80;
+        *(pOutput + 1) = ((unic >> 6) & 0x3F) | 0x80;
+        *pOutput = ((unic >> 12) & 0x0F) | 0xE0;
+        return 3;
+    }
+    else if (unic >= 0x00010000 && unic <= 0x001FFFFF)
+    {
+        // * U-00010000 - U-001FFFFF:  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        *(pOutput + 3) = (unic & 0x3F) | 0x80;
+        *(pOutput + 2) = ((unic >> 6) & 0x3F) | 0x80;
+        *(pOutput + 1) = ((unic >> 12) & 0x3F) | 0x80;
+        *pOutput = ((unic >> 18) & 0x07) | 0xF0;
+        return 4;
+    }
+    else if (unic >= 0x00200000 && unic <= 0x03FFFFFF)
+    {
+        // * U-00200000 - U-03FFFFFF:  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+        *(pOutput + 4) = (unic & 0x3F) | 0x80;
+        *(pOutput + 3) = ((unic >> 6) & 0x3F) | 0x80;
+        *(pOutput + 2) = ((unic >> 12) & 0x3F) | 0x80;
+        *(pOutput + 1) = ((unic >> 18) & 0x3F) | 0x80;
+        *pOutput = ((unic >> 24) & 0x03) | 0xF8;
+        return 5;
+    }
+    else if (unic >= 0x04000000 && unic <= 0x7FFFFFFF)
+    {
+        // * U-04000000 - U-7FFFFFFF:  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+        *(pOutput + 5) = (unic & 0x3F) | 0x80;
+        *(pOutput + 4) = ((unic >> 6) & 0x3F) | 0x80;
+        *(pOutput + 3) = ((unic >> 12) & 0x3F) | 0x80;
+        *(pOutput + 2) = ((unic >> 18) & 0x3F) | 0x80;
+        *(pOutput + 1) = ((unic >> 24) & 0x3F) | 0x80;
+        *pOutput = ((unic >> 30) & 0x01) | 0xFC;
+        return 6;
+    }
+
+    return 0;
+}
+
+#define OB_INIT_TRACE_Breadth 2
+#define true 1
+#define false 0
+
+//
+// 定义日志级别
+
+#define __OB_LOG_LEVEL_OFF 0
+#define __OB_LOG_LEVEL_FATAL 1
+#define __OB_LOG_LEVEL_ERR 2
+#define __OB_LOG_LEVEL_WARN 3
+#define __OB_LOG_LEVEL_INFO 4
+#define __OB_LOG_LEVEL_DEBUG 5
+
+static inline _OB_LOG(const char* level ,const char* file, const char* func, unsigned long line, char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	printf("\n\n[%s] %s %s %d\n\n",level, file, func, line);
+	vprintf(format, args);
+	va_end(args);
+}
+#ifndef _OB_LOG_LEVEL
+#define _OB_LOG_LEVEL __OB_LOG_LEVEL_DEBUG
+#endif
+
+#if _OB_LOG_LEVEL >= __OB_LOG_LEVEL_FATAL
+#define FATAL(format , ...) do{\
+	_OB_LOG("FATAL", __FILE__, __func__, __LINE__ , format , ##__VA_ARGS__);\
+}while(0)
+#else
+#define FATAL(...)
+#endif
+
+#if _OB_LOG_LEVEL >= __OB_LOG_LEVEL_WARN
+#define WARN(format , ...) do{\
+	_OB_LOG("WARN", __FILE__, __func__, __LINE__ , format , ##__VA_ARGS__);\
+}while(0)
+#else
+#define WARN(...)
+#endif
+
+#if _OB_LOG_LEVEL >= __OB_LOG_LEVEL_INFO
+#define INFO(format , ...) do{\
+	_OB_LOG("INFO", __FILE__, __func__, __LINE__ , format , ##__VA_ARGS__);\
+}while(0)
+#else
+#define INFO(...)
+#endif
+
+#if _OB_LOG_LEVEL >= __OB_LOG_LEVEL_DEBUG
+
+#define DEBUG(format , ...) do{\
+	_OB_LOG("DEBUG", __FILE__, __func__, __LINE__ , format , ##__VA_ARGS__);\
+}while(0)
+#else
+#define DEBUG(...)
+#endif
+
+static int vmid = 0;
+
+/* 对象信息 */
+typedef struct OB_VM OB_VM;
+typedef void (*OB_OBJ_destroy)(OB_VM* ,void* ,size_t );
+typedef struct OB_OBJ OB_OBJ;
+typedef struct BackLink BackLink;
+#define CHECK_HEAD "OB_OBJ"
+typedef struct OB_OBJ
+{
+	/* 空间是否使用 */
+	char* inUsed;
+	{{!-- int inUsed; --}}
+	/* 单个对象大小 */
+	size_t size;
+	/* 对象类型 */
+	char* typename;
+	/* 对象个数 */
+	size_t length;
+	/* 反向指针
+	* 当对象被销毁的时候，通知正向引用的对象，深度遍历其反向指针，判断是否可达到ROOT。
+	* 如果可达，则无变化，如果不可达，则销毁自己。
+	*
+	* 反向指针越界时抛出异常
+	*/
+	BackLink* backwards;
+	OB_OBJ_destroy destroy;
+} OB_OBJ;
+
+
+static const char* stringConstPool[] = { 
+{{#each stringConstPool}}
+{{{toStringValue this}}},
+{{/each}}
+};
+static const size_t stringConstPoolSize = {{length stringConstPool}};
+
+#define VMInterruptException 0x01
+#define ChangeStateException 0x02
+#define FSMDestroyException 0x03
+#define VMDestroyException 0x05
+#define VMPausedException 0x07
+
+#define shouldStop(r) (r != 0 && r != 2 && r != 3)
+
+typedef struct OB_MEM {
+	size_t size;
+	size_t lastObj;
+	char* mem;
+	size_t initMem;
+	size_t maxMem;
+	size_t GCCheckLstLen;
+	size_t GCCheckLstCnt;
+	size_t* GCCheckLst;
+}OB_MEM;
+
+typedef size_t FSM_PTR;
+typedef size_t STATE_PTR;
+typedef size_t MSG_PTR;
+typedef size_t MSGHDLR_PTR;
+typedef size_t DequeNode_PTR;
+typedef size_t STR_PTR;
+
+#define OB_PREDEFINED_MSG_CNT 2
+#define OB_PREDEFINED_MSG_Start 0
+#define OB_PREDEFINED_MSG_animationframe 1
+
+typedef struct OB_VM
+{
+	size_t id;
+	size_t fsmid;
+	void* paused;
+	/* bool */
+	int pausing;
+	/* OB_FSM dequeNode*/
+	DequeNode_PTR Running; // list
+	// RunningByID
+	/* OB_FSM dequeNode*/
+	DequeNode_PTR Pending;
+	size_t config;
+	size_t objcnt;
+	size_t* constPoolRef;
+	OB_MEM mem;
+	size_t predefinedMsg[OB_PREDEFINED_MSG_CNT];
+	size_t ScheduledMessageCount;
+	size_t* ScheduledMessages; // list
+} OB_VM;
+static void* __OB_malloc(OB_VM* vm, size_t size, char* typename,OB_OBJ_destroy destroy);
+#define OB_malloc(vm,TYPE,READABLE_TYPE_NAME,destroy) __OB_malloc(vm,sizeof(TYPE),READABLE_TYPE_NAME,destroy)
+
+static void OB_free(OB_VM* vm, char* ptr);
+static void OB_free_by_ptr(OB_VM* vm, size_t ptr);
+
+static inline size_t GetOBPtr(OB_VM* vm, void* o) {
+	return ((char*)o) - vm->mem.mem;
+}
+static inline void* GetOBObj(OB_VM* vm, size_t offset) {
+	if (offset == 0) {
+		return NULL;
+	}
+	OB_MEM* mem = &vm->mem;
+	if(offset > mem->lastObj + sizeof(OB_OBJ)){
+		return NULL;
+	}
+	char* v = (vm->mem.mem + offset);
+	OB_OBJ* obj = v - sizeof(OB_OBJ);
+	if(!obj->inUsed==CHECK_HEAD){
+		return NULL;
+	}
+	return v;
+}
+
+
+typedef struct OB_FSM OB_FSM;
+typedef struct OB_STATE OB_STATE;
+typedef struct OB_Message OB_Message;
+typedef struct OB_Deque_Node OB_Deque_Node;
+
+
+#define OB_Message_Type_USERMSG 0
+#define OB_Message_Type_EVENT 1
+union OB_Message_Arg{
+	size_t ptrdiff;
+	double number;
+	int integer;
+	void* ptr;
+};
+typedef union OB_Message_Arg OB_Message_Arg;
+typedef struct OB_Message
+{
+	char* name;
+	char* argType;
+	OB_Message_Arg arg;
+	int type;
+	FSM_PTR sender;
+	/** 是否共享，用于广播，获取参数时需要复制 */
+	char share;
+} OB_Message;
+
+typedef int (*OB_MessageHandler_func)(OB_VM* vm,FSM_PTR fsm, STATE_PTR st, MSG_PTR msg);
+typedef struct OB_MessageHandler
+{
+	int type;
+	char* name;
+	char* argType;
+	OB_MessageHandler_func func;
+} OB_MessageHandler;
+
+
+typedef struct OB_Deque_Node
+{
+	size_t previous;
+	size_t next;
+	size_t value;
+} OB_Deque_Node;
+
+static inline OB_Deque_Node* GetDequeNode(OB_VM* vm, DequeNode_PTR id);
+
+typedef struct BackLink {
+	BackLink* next;
+	size_t from;
+	size_t memberOffset;
+} BackLink;
+static inline void printObjInfo(char* info, OB_OBJ* obj, size_t diff) {
+#if _OB_LOG_LEVEL >= __OB_LOG_LEVEL_DEBUG
+	if (obj->inUsed == CHECK_HEAD) {
+		size_t end = diff + obj->size + sizeof(OB_OBJ);
+		printf( "%s OBJ type %s size %zu * %zu @ %zu to @ %zu MEM\n", info, obj->typename, obj->size, obj->length, diff, end);
+		BackLink* b = obj->backwards;
+		size_t c = 0;
+		while(b != NULL){
+			printf("\n < %zu - %zu ",b->from,b->memberOffset);
+			b = b->next;
+			c++;
+		}
+		printf("\n backwards total: %zd \n",c);
+	}
+	else {
+		printf( "%s OBJ empty area size %zu @ %zu MEM\n", info, obj->size, diff);
+	}
+#endif
+}
+/*
+static void OB_set_add(uint32_t* cnt, size_t** set, size_t value) {
+	for (uint32_t i = 0; i < *cnt; i++) {
+		OB_OBJ* o = set[i];
+		if (o == NULL) {
+			set[i] = value;
+			return;
+		}
+	}
+	size_t* newset;
+	uint32_t newsize = *cnt + 1;
+	size_t* oldset = *set;
+	newset = realloc(oldset, newsize * sizeof(size_t));
+	if (NULL == newset) {
+		DEBUG( "OB_set_add fail");
+		abort();
+	}
+	*set = newset;
+	(*set)[*cnt] = value;
+	*cnt = newsize;
+}
+*/
+/**
+* 关联对象
+* memberOffset 上游对象指向下游对象的字段偏移，没有关联字段则为 -1
+*/
+static inline void OB_link_obj(OB_VM* vm, size_t from,size_t memberOffset, size_t target) {
+	if (target == 0) {
+		return;
+	}
+	if (from == target) {
+		return;
+	}
+	OB_OBJ* o_target = (char*)GetOBObj(vm,target) - sizeof(OB_OBJ);
+	BackLink* b = ob_t_calloc(1,sizeof(BackLink));
+	b-> next = o_target->backwards;
+	b->from = from;
+	b->memberOffset = memberOffset;
+	o_target->backwards = b;
+}
+static void __OB_free_obobj(OB_VM* vm, OB_OBJ* c_obj) {
+	if(c_obj==NULL){
+		return;
+	}
+	OB_MEM* mem = &vm->mem;
+	size_t p = ((char*)c_obj) - mem->mem;
+	if(p<0){
+		printf("p<0 MEM\n");
+		abort();
+	}
+	printObjInfo("free", c_obj, p);
+	if(c_obj->destroy){
+		(*c_obj->destroy)(vm,((char*)c_obj)+sizeof(OB_OBJ),p);
+	}
+	c_obj->inUsed = NULL;
+	if(c_obj->backwards!=0){
+		printf("backwards not 0");
+		abort();
+	}
+	size_t s = c_obj->size;
+	char* next = ((char*)c_obj) + s + sizeof(OB_OBJ);
+	while (((size_t)abs(next - mem->mem)) < mem->size) {
+		OB_OBJ* nextObj = (OB_OBJ*)next;
+		if (nextObj->inUsed == NULL) {
+			next = next + nextObj->size + sizeof(OB_OBJ);
+			c_obj->size += nextObj->size + sizeof(OB_OBJ);
+		}
+		else {
+			break;
+		}
+	}
+	
+	{{!-- for(size_t cnt = mem->GCCheckLstCnt-1;cnt < SIZE_MAX;cnt--){
+		if(mem->GCCheckLst[cnt]==p){
+			mem->GCCheckLst[cnt] = 0;
+			break;
+		}
+	} --}}
+}
+static inline void OB_unlink_obj(OB_VM* vm, size_t from,size_t memberOffset, size_t target) {
+	if (target == 0) {
+		return;
+	}
+	if (from == target) {
+		return;
+	}
+	OB_MEM* mm = &vm->mem;
+	OB_OBJ* o_target = (char*)GetOBObj(vm,target)-sizeof(OB_OBJ);
+	
+	printObjInfo("unlink", o_target, target-sizeof(OB_OBJ));
+
+	BackLink** pparent = &o_target->backwards;
+	BackLink* parent = (*pparent);
+	if((parent)!=NULL){
+		if((parent)->from == from && (parent)->memberOffset==memberOffset){
+			(*pparent) = parent->next;
+			ob_t_free(parent);
+		}else{
+			BackLink* b = (parent)->next;
+			while(b!=NULL){
+				BackLink* next = b->next;
+				if(b->from == from && b->memberOffset == memberOffset){
+					ob_t_free(b);
+					(parent)->next = next;
+					break;
+				}
+				parent = b;
+				b = next;
+			}
+		}
+	}
+	if(o_target->inUsed==CHECK_HEAD && o_target->backwards == NULL){
+		__OB_free_obobj(vm,o_target);
+	}
+}
+
+static inline void OB_free_by_ptr(OB_VM* vm, size_t ptr) {
+	OB_OBJ* c_obj =(OB_OBJ*)( vm->mem.mem + ptr - sizeof(OB_OBJ));
+	__OB_free_obobj(vm, c_obj);
+}
+static inline void OB_free(OB_VM* vm, char* ptr)
+{
+	OB_OBJ* c_obj = (OB_OBJ*)(ptr - sizeof(OB_OBJ));
+	__OB_free_obobj(vm, c_obj);
+}
+
+static DequeNode_PTR OB_Deque_remove_item(OB_VM* vm,size_t from,size_t memberOffset, DequeNode_PTR _deque, size_t value){
+	DequeNode_PTR deque = _deque;
+	size_t owner = from;
+	if(deque==0){
+		return 0;
+	}
+	OB_Deque_Node* o_deque = GetDequeNode(vm,deque);
+	int first = 1;
+	while(o_deque->value != value && o_deque!=NULL){
+		first = 0;
+		o_deque = GetDequeNode(vm,o_deque->next);
+	}
+	if(o_deque!=NULL){
+		DequeNode_PTR next = o_deque->next;
+		OB_Deque_Node* o_next = GetDequeNode(vm,next);
+		o_next->previous = o_deque->previous;
+		if(o_deque->previous!=0){
+			OB_Deque_Node* prev = GetDequeNode(vm,o_deque->previous);
+			prev->next = o_deque->next;
+		}
+		//OB_free(vm,OB_Deque_Node,o_deque);
+		OB_unlink_obj(vm,from,memberOffset,value);
+		if(first==1){
+			return next;
+		}else{
+			return _deque;
+		}
+	}
+	return _deque;
+}
+static DequeNode_PTR OB_Deque_append(OB_VM* vm,size_t from,size_t memberOffset, DequeNode_PTR _deque, size_t value)
+{
+	DequeNode_PTR deque = _deque;
+	size_t owner = from;
+	if(deque!=0){
+		owner = deque;
+		while (((GetDequeNode(vm, deque))->next) != 0)
+		{
+			OB_Deque_Node* o_deque = GetDequeNode(vm, deque);
+			owner = deque;
+			deque = o_deque->next;
+		}
+	}
+	OB_Deque_Node* node = OB_malloc(vm, OB_Deque_Node, "OB_Deque_Node",NULL);
+	if (node == NULL)
+	{
+		FATAL("malloc fail");
+		abort();
+		return 0;
+	}
+	DequeNode_PTR node_ptr = GetOBPtr(vm, node);
+	if(owner == from){
+		OB_link_obj(vm,owner,memberOffset,node_ptr);
+	}else{
+		OB_link_obj(vm,owner,offsetof(OB_Deque_Node,next),node_ptr);
+	}
+	OB_link_obj(vm,node_ptr,offsetof(OB_Deque_Node,value),value);
+	node->value = value;
+	node->previous = deque;
+	node->next = 0;
+	if(_deque!=0){
+		OB_Deque_Node* prev = GetDequeNode(vm, deque);
+		prev->next = node_ptr;
+		return _deque;
+	}else{
+		return node_ptr;
+	}
+}
+
+static size_t OB_Deque_remove_first(OB_VM* vm,size_t from,size_t memberOffset, DequeNode_PTR* deque)
+{
+	if (*deque == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		OB_Deque_Node* o_deque = GetDequeNode(vm, *deque);
+		size_t value = o_deque->value;
+		DequeNode_PTR next = o_deque->next;
+		if(next!=0){
+			OB_link_obj(vm,from,memberOffset,next);
+		}
+		OB_unlink_obj(vm,from,memberOffset,*deque);
+		OB_unlink_obj(vm,*deque,offsetof(OB_Deque_Node,value),value);
+		OB_Deque_Node* node = GetDequeNode(vm, next);
+		//OB_free(vm, o_deque);
+		*deque = next;
+		return value;
+	}
+}
+
+
+static inline OB_Deque_Node* GetDequeNode(OB_VM* vm, DequeNode_PTR id) {
+	OB_Deque_Node* o = (OB_Deque_Node*)GetOBObj(vm, id);
+	return o;
+}
+static inline OB_FSM* GetOBFSM(OB_VM* vm, FSM_PTR id) {
+	OB_FSM* o_fsm = (OB_FSM*)GetOBObj(vm, id);
+	return o_fsm;
+}
+static inline OB_STATE* GetOBSTATE(OB_VM* vm, STATE_PTR id) {
+	OB_STATE* o = (OB_STATE*)GetOBObj(vm, id);
+	return o;
+}
+static inline OB_Message* GetOBMessage(OB_VM* vm, MSG_PTR id) {
+	OB_Message* o = (OB_Message*)GetOBObj(vm, id);
+	return o;
+}
+static inline OB_Message_Arg GetOBMessageArg(OB_VM* vm,MSG_PTR id){
+	OB_Message* o = (OB_Message*)GetOBObj(vm, id);
+	return o->arg;
+}
+static inline OB_MessageHandler* GetOBMessageHandler(OB_VM* vm, MSGHDLR_PTR id) {
+	OB_MessageHandler* o = (OB_MessageHandler*)GetOBObj(vm, id);
+	return o;
+}
+
+typedef struct OB_STATE
+{
+	char* name;
+	FSM_PTR fsm;
+	/* OB_MessageHandler */
+	DequeNode_PTR eventHandlers;
+	/* OB_MessageHandler */
+	DequeNode_PTR messageHandlers;
+} OB_STATE;
+
+typedef struct OB_FSM
+{
+	size_t id;
+	STATE_PTR currentState;
+	OB_VM* vm;
+	char* typename;
+	/*OB_Message*/
+	DequeNode_PTR Inbox;
+	/*OB_Message*/
+	DequeNode_PTR PrioritizedInbox;
+	size_t ScheduledMessageCount;
+	size_t* ScheduledMessages; // list
+} OB_FSM;
+
+typedef struct OB_VM_config
+{
+	FILE* output;
+	int logLevel;
+	size_t initMem;
+	size_t maxMem;
+} OB_VM_config;
+
+static inline OB_VM_config* GetOBVMConfig(OB_VM* vm){
+	return (OB_VM_config*)GetOBObj(vm,vm->config);
+}
+
+static inline void OB_addToGCCheckLst(OB_VM* vm,size_t ptr){
+	OB_MEM* mm = &vm->mem;
+	if(mm->GCCheckLstLen < mm->GCCheckLstCnt+1){
+		size_t len = 0;
+		if(mm->GCCheckLstLen==0){
+			len = 10;
+		}else{
+			len = mm->GCCheckLstLen * 2;
+		}
+		mm->GCCheckLst = realloc(mm->GCCheckLst,len*sizeof(size_t));
+		if(mm->GCCheckLst==NULL){
+			printf("realloc GCCheckLst errr. OOM?");
+			exit(1);
+		}
+		mm->GCCheckLstLen = len;
+	}
+	mm->GCCheckLst[mm->GCCheckLstCnt] = ptr;
+	mm->GCCheckLstCnt++;
+	OB_link_obj(vm,sizeof(OB_OBJ),-2,ptr);
+}
+
+#define UPDATE_LAST_OBJ(offset) if(mm->lastObj < offset){mm->lastObj=offset;}
+static void* __OB_malloc(OB_VM* vm, size_t size, char* typename,OB_OBJ_destroy destroy)
+{
+	size_t offset1;
+	OB_MEM* mm = &vm->mem;
+	printf( "OB_malloc %s %zu Bytes\n", typename, size);
+	char* b_info = mm->mem;
+	while (abs(b_info - mm->mem) < mm->size) {
+		OB_OBJ* info = (OB_OBJ*)b_info;
+		printObjInfo("scan", info, b_info - mm->mem);
+		if (info->inUsed == NULL) {
+			if (info->size < size) {//空间不够则跳过
+				b_info += info->size + sizeof(OB_OBJ);
+				continue;
+			}
+			else if (info->size >= size && (info->size - size) < (sizeof(OB_OBJ) + 4)) {// 空间合适就利用
+				printf( "OB_malloc found empty place %zu\n",b_info-mm->mem);
+				info->inUsed = CHECK_HEAD;
+				info->typename = typename;
+				info->length = 1;
+				info->backwards = NULL;
+				info->destroy = destroy;
+				char* base = (char*)(info + 1);
+				memset(base, 0, size);
+				offset1 = base-mm->mem;
+				UPDATE_LAST_OBJ(offset1);
+				OB_addToGCCheckLst(vm,offset1);
+				return base;
+			}
+			else {// 空间过大则拆分
+				char* b_next = b_info + size + sizeof(OB_OBJ);
+				size_t nextSize = info->size - size - sizeof(OB_OBJ);
+				memset(b_next, 0, nextSize + sizeof(OB_OBJ));
+				OB_OBJ* next = (OB_OBJ*)b_next;
+				next->inUsed = NULL;
+				next->size = nextSize;
+				info->inUsed = CHECK_HEAD;
+				info->size = size;
+				info->typename = typename;
+				info->length = 1;
+				info->backwards = NULL;
+				info->destroy = destroy;
+				char* base = (char*)(info + 1);
+				memset(base, 0, size);
+				printf( "OB_malloc use empty in big space %zu\n",b_info-mm->mem);
+				offset1 = base-mm->mem;
+				UPDATE_LAST_OBJ(offset1);
+				OB_addToGCCheckLst(vm, offset1);
+				return base;
+			}
+		}
+		else {
+			b_info += info->size + sizeof(OB_OBJ);
+			continue;
+		}
+	}
+	size_t newsize = mm->size + mm->initMem;
+	while (newsize < mm->size + sizeof(OB_OBJ) + size) {
+		newsize += mm->initMem;
+	}
+	if (newsize > mm->maxMem) {
+		printf("out of max memory\n");
+		abort();
+		return NULL;
+	}
+	size_t offset = b_info - mm->mem;
+	char* mem = realloc(mm->mem, newsize);
+	if (mem == NULL) {
+		printf("malloc fail\n");
+		abort();
+		return NULL;
+	}
+	mm->mem = mem;
+	char* start = mm->mem + offset;
+	OB_OBJ* obj = (OB_OBJ*)start;
+	obj->inUsed = CHECK_HEAD;
+	obj->typename = typename;
+	obj->length = 1;
+	obj->backwards = NULL;
+	obj->size = size;
+	obj->destroy = destroy;
+	printObjInfo("new", obj, offset);
+	char* next = start + size + sizeof(OB_OBJ);
+	OB_OBJ* nextO = (OB_OBJ*)next;
+	nextO->inUsed = NULL;
+	nextO->size = newsize - mm->size - sizeof(OB_OBJ) * 2 - size;
+	printObjInfo("next", nextO, next - mm->mem);
+	mm->size = newsize;
+	char* base = (char*)(obj + 1);
+	memset(base, 0, size);
+	printf( "OB_malloc extend memory size to %zu Bytes\n", newsize);
+	offset1 = base-mm->mem;
+	UPDATE_LAST_OBJ(offset1);
+	OB_addToGCCheckLst(vm,offset1);
+	return base;
+}
+
+typedef struct OB_String
+{
+	size_t inConstPool;
+	char* content;
+}OB_String;
+static void OB_String_destroy(OB_VM* vm,OB_String* o,size_t p){
+	if(o->inConstPool==SIZE_MAX){
+	    ob_t_free(o->content);
+	}else{
+		vm->constPoolRef[o->inConstPool] = 0;
+	}
+}
+static inline OB_String* addstr(OB_VM*vm , char* str){
+		OB_String* o = OB_malloc(vm,OB_String,"String",OB_String_destroy);
+		o->content = str;
+		o->inConstPool = SIZE_MAX;
+		return o;
+}
+static inline STR_PTR conststr2ptr(OB_VM* vm,size_t idx){
+	size_t* pool = vm->constPoolRef;
+	size_t ptr = pool[idx];
+	if(ptr == 0){
+		OB_String* obs = addstr(vm,stringConstPool[idx]);
+		obs->inConstPool = idx;
+		ptr = GetOBPtr(vm,obs);
+		pool[idx] = ptr;
+	}
+	return ptr;
+}
+static inline size_t findInStringConstPool(char* str){
+	size_t len = strlen(str);
+	for(size_t i=0;i<stringConstPoolSize;i++){
+		char* constStr = stringConstPool[i];
+		if(i % 10 == 0){
+			// 获取字符串长度需要计算，不能全测
+			if(strlen(constStr)>len){
+				return SIZE_MAX ;
+			}
+		}
+		if(0==strcmp(str,constStr)){
+			return i;
+		}
+	}
+	return SIZE_MAX ;
+}
+static inline STR_PTR str2ptr(OB_VM* vm,char* str,int* shouldFree){
+	size_t idx = findInStringConstPool(str);
+	if(idx!=SIZE_MAX){
+		if(shouldFree!=NULL)
+			*shouldFree = 1;
+		return conststr2ptr(vm, idx);
+	}else{
+		if(shouldFree!=NULL)
+			*shouldFree = 0;
+		OB_String* obs = addstr(vm ,str);
+		return  GetOBPtr(vm,obs);
+	}
+}
+static inline OB_String* ptr2str(OB_VM* vm,STR_PTR ptr){
+	OB_String* v = (OB_String*)GetOBObj(vm, ptr);
+	return v;
+}
+/*
+static inline STR_PTR getStrPtr(OB_VM* vm,size_t length,size_t argCnt,int (*p)(char** buf,...),...){
+    va_list args;
+	char* buf = ob_t_calloc(length,sizeof(char));
+	va_start(args, p);
+	(*p)(buf,args);
+    va_end(args);
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+*/
+static inline STR_PTR longToStrPtr(OB_VM* vm,long num){
+	char* buf = ob_t_calloc(20,sizeof(char));
+	sprintf(buf, "%ld", num);
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+static inline STR_PTR longToStrPtr16(OB_VM* vm,long num){
+	char* buf = ob_t_calloc(9,sizeof(char));
+	sprintf(buf, "%lx", num);
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+static inline STR_PTR boolToStrPtr(OB_VM* vm,long num){
+	char* buf = ob_t_calloc(6,sizeof(char));
+	sprintf(buf, "%s", num==0?"false":"true");
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+static inline STR_PTR doubleToStrPtr(OB_VM* vm,double num){
+	char* buf = ob_t_calloc(20,sizeof(char));
+	sprintf(buf, "%lf", num);
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+  
+int lastIndexOf(char str[], char sub_str[]) {  
+    size_t str_len = strlen(str);  
+    size_t sub_len = strlen(sub_str);  
+    size_t i, j;  
+  
+    for (i = str_len - sub_len; i >= 0; i--) {  
+        for (j = 0; j < sub_len; j++) {  
+            if (str[i + j] != sub_str[j])  
+                break;  
+        }  
+        if (j == sub_len)  
+            return (int)i;  
+    }  
+    return -1;  
+} 
+static inline long Text_IndexOf(char* str,char* substr,int forward){
+	if(forward!=0){
+		char* find = strstr(str,substr);
+		if(find == NULL){
+			return -1;
+		}else{
+			return find - str;
+		}
+	}else{
+		return lastIndexOf(str,substr);
+	}
+}
+static inline long Text_IndexOfFrom(char* str,char* substr,uint32_t from){
+	size_t sublen = strlen(substr);
+	if(sublen==0){
+		return 0;
+	}
+	size_t len = strlen(str);
+	if(len < from){
+		return -1;
+	}
+	char* start = str + from;
+	char* find = strstr(str,substr);
+	if(find == NULL){
+		return -1;
+	}
+	return find - start;
+}
+static inline STR_PTR stringjoin(OB_VM* vm,STR_PTR a,STR_PTR b){
+	char* as = ptr2str(vm,a)->content;
+	char* bs = ptr2str(vm,b)->content;
+	size_t len = strlen(as)+strlen(bs)+1;
+	char* buf = ob_t_calloc(len,sizeof(char));
+	strcat_s(buf,len,as);
+	strcat_s(buf,len,bs);
+	int shouldFree = 0;
+	STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+	if(shouldFree==1){
+		ob_t_free(buf);
+	}
+	return ptr;
+}
+static inline STR_PTR OB_toString(OB_VM* vm, size_t ptr){
+	OB_OBJ* c_obj = (OB_OBJ*)(vm->mem.mem + ptr - sizeof(OB_OBJ));
+	char* typename = c_obj->typename;
+	if(0==strcmp(typename,"String")){
+		return ptr;
+	}
+	if(0==strcmp(typename,"OB_Message")){
+		int shouldFree = 1;
+		OB_Message* msg = (OB_Message*)(vm->mem.mem + ptr );
+		char* buf = NULL;
+		size_t len;
+		if(msg->type==OB_Message_Type_EVENT){
+			len = strlen(msg->name)+7;
+			buf = ob_t_calloc(len,sizeof(char));
+			strcat_s(buf,len,"Event:");
+		}else{
+			len = strlen(msg->name)+9;
+			buf = ob_t_calloc(len,sizeof(char));
+			strcat_s(buf,len,"Message:");
+		}
+		strcat_s(buf,len,msg->name);
+		STR_PTR ptr = str2ptr(vm,buf,&shouldFree);
+		if(shouldFree==1){
+			ob_t_free(buf);
+		}
+		return ptr;
+	}
+	if(0==strcmp(typename,"OB_FSM")){
+		int shouldFree = 1;
+		OB_FSM* msg = (OB_FSM*)(vm->mem.mem + ptr );
+		char* buf = NULL;
+		size_t len = strlen(msg->typename)+5;
+		buf = ob_t_calloc(len,sizeof(char));
+		strcat_s(buf,len,"FSM:");
+		strcat_s(buf,len,msg->typename);
+		STR_PTR ptr = str2ptr(vm,buf,NULL);
+		if(shouldFree==1){
+			ob_t_free(buf);
+		}
+		return ptr;
+	}
+	ptr = str2ptr(vm,typename,NULL);
+	return ptr;
+}
+static OB_VM* OB_VM_default_config(OB_VM* vm)
+{
+	size_t s = sizeof(OB_OBJ) + sizeof(OB_VM_config);
+	OB_OBJ* mem = ob_t_calloc(s, 1);
+	if (mem == NULL) {
+		ob_t_free(vm);
+		return NULL;
+	}
+	mem->inUsed = CHECK_HEAD;
+	mem->typename = "OB_VM_config";
+	mem->length = 1;
+	mem->size = sizeof(OB_VM_config);
+	mem->backwards = NULL;
+	OB_OBJ* start = mem + 1;
+	OB_VM_config* c = (OB_VM_config*)start;
+	c->logLevel = __OB_LOG_LEVEL_OFF;
+	c->output = NULL;
+	c->initMem = 1024;
+	c->maxMem = 1024 * 1024 * 500;
+	vm->mem.mem = (char*)mem;
+	vm->mem.initMem = c->initMem;
+	vm->mem.maxMem = c->maxMem;
+	vm->mem.size = s;
+	vm->config = GetOBPtr(vm, c);
+	return vm;
+}
+static OB_VM* OB_VM_clone_config(OB_VM* vm, OB_VM_config* t)
+{
+	size_t s = sizeof(OB_OBJ) + sizeof(OB_VM_config);
+	OB_OBJ* mem = ob_t_calloc(s, 1);
+	if (mem == NULL) {
+		ob_t_free(vm);
+		return NULL;
+	}
+	mem->inUsed = CHECK_HEAD;
+	mem->typename = "OB_VM_config";
+	mem->length = 1;
+	mem->size = sizeof(OB_VM_config);
+	mem->backwards = NULL;
+	OB_OBJ* start = mem + 1;
+	OB_VM_config* c = (OB_VM_config*)start;
+	c->logLevel = t->logLevel;
+	c->output = t->output;
+	c->initMem = t->initMem;
+	if (c->initMem == 0) {
+		c->initMem = 1024;
+	}
+	c->maxMem = t->maxMem;
+	if (c->maxMem < c->initMem) {
+		if (c->maxMem == 0) {
+			c->maxMem = 1024 * 1024 * 500;
+		}
+		else {
+			c->maxMem = c->initMem;
+		}
+	}
+	vm->mem.mem = (char*)mem;
+	vm->mem.initMem = c->initMem;
+	vm->mem.maxMem = c->maxMem;
+	vm->mem.size = s;
+	vm->config = GetOBPtr(vm, c);
+	return vm;
+}
+static OB_VM* OB_VM_create(OB_VM_config* config)
+{
+	OB_VM* vm = ob_t_calloc(sizeof(OB_VM), 1);
+	if (vm == NULL)
+	{
+		FATAL("malloc fail");
+		return NULL;
+	}
+	vm->id = vmid++;
+	vm->fsmid = 0;
+	vm->paused = NULL;
+	vm->pausing = false;
+	vm->Running = 0;
+	vm->Pending = 0;
+	vm->mem.mem = NULL;
+	vm->mem.size = 0;
+	
+	vm->mem.GCCheckLstLen=0;
+	vm->mem.GCCheckLstCnt=0;
+	vm->mem.GCCheckLst = ob_t_calloc(0,sizeof(size_t));
+	vm->ScheduledMessages = NULL;
+	vm->ScheduledMessageCount = 0;
+
+	if (config != NULL)
+	{
+		vm = OB_VM_clone_config(vm, config);
+	}
+	else
+	{
+		vm = OB_VM_default_config(vm);
+	}
+	if(vm!=NULL){
+		vm->constPoolRef = ob_t_calloc(stringConstPoolSize,sizeof(size_t));
+	
+		OB_Message* event_start = OB_malloc(vm, OB_Message, "OB_Message",NULL);
+		if (event_start == NULL)
+		{
+			FATAL("malloc fail");
+			abort();
+			return NULL;
+		}
+		event_start->name = "Start";
+		event_start->type = OB_Message_Type_EVENT;
+		MSG_PTR p_event_start = GetOBPtr(vm, event_start);
+		OB_link_obj(vm, sizeof(OB_OBJ)/* root,OB_VM->config */,SIZE_MAX, p_event_start);
+		vm->predefinedMsg[ OB_PREDEFINED_MSG_Start ] = p_event_start;
+
+		OB_Message* event_af = OB_malloc(vm, OB_Message, "OB_Message",NULL);
+
+		if (event_af == NULL)
+		{
+			FATAL("malloc fail");
+			abort();
+			return NULL;
+		}
+		event_af->name = "animationframe";
+		event_af->type = OB_Message_Type_EVENT;
+		MSG_PTR p_event_af = GetOBPtr(vm, event_af);
+		OB_link_obj(vm, sizeof(OB_OBJ)/* root,OB_VM->config */,SIZE_MAX, p_event_af);
+		vm->predefinedMsg[ OB_PREDEFINED_MSG_animationframe ] = p_event_af;
+	}
+	return vm;
+}
+static int OB_FSM_update(OB_VM* vm, FSM_PTR fsm);
+static void OB_FSM_post_prioritized_message(OB_VM* vm, FSM_PTR fsm, MSG_PTR msg);
+static OB_MessageHandler* OB_FSM_getEventHandler(OB_VM* vm, FSM_PTR fsm, char* evtName, char* argType);
+
+
+static void OB_FSM_post_message(OB_VM* vm, FSM_PTR fsm, MSG_PTR msg)
+{
+	if(fsm==0){
+		return;
+	}
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	DequeNode_PTR inbox = OB_Deque_append(vm,fsm,offsetof(OB_FSM,Inbox), o_fsm->Inbox, msg);
+	GetOBFSM(vm,fsm)->Inbox = inbox;
+	vm->Pending = OB_Deque_append(vm,sizeof(OB_OBJ),SIZE_MAX, vm->Pending, fsm);
+	OB_link_obj(vm,fsm,SIZE_MAX,msg);
+}
+
+
+static inline ULONGLONG getClock(){
+#ifdef _WIN32
+    return GetTickCount64();
+#else
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+        // 错误处理
+        return 0ULL;
+    }
+    return (ULONGLONG)(ts.tv_sec * 1000ULL + ts.tv_nsec / 1000000ULL);
+#endif
+}
+
+typedef struct {
+	ULONGLONG clock;
+	MSG_PTR msg;
+	FSM_PTR self;
+}ScheduleItem;
+
+static void ScheduleItem_destroy(OB_VM* vm , ScheduleItem* o,size_t ptr){
+	OB_unlink_obj(vm,ptr,offsetof(ScheduleItem,msg),o->msg);
+}
+static inline void OB_addScheduleItem(OB_VM* vm,size_t** lst,size_t* count,size_t item_ptr,ULONGLONG clock){
+	size_t insertAt = SIZE_MAX;
+	
+	size_t oldsize = *count;
+	if(*lst == NULL){
+		*lst = ob_t_calloc(5,sizeof(size_t));
+		*count = 5;
+		(*lst)[0] = item_ptr;
+		return;
+	}else if((*lst)[*count-1]!=0){
+		// 扩展容量
+		size_t newsize = *count + 5;
+		size_t* newlst = realloc(*lst,newsize*sizeof(size_t));
+		if(newlst == NULL){
+			FATAL("malloc fail");
+			abort();
+			return;
+		}
+		memset(newlst + *count, 0, (newsize-*count) * sizeof(size_t));
+		*lst = newlst;
+		*count = newsize;
+	}
+	size_t* _lst = *lst;
+	for(size_t i = 0;i<*count;i++){
+		if(_lst[i]==0){
+			ScheduleItem* item1 = (ScheduleItem*)GetOBObj(vm, _lst[i]);
+			insertAt = i;
+			break;
+		}
+		ScheduleItem* item1 = (ScheduleItem*)GetOBObj(vm, _lst[i]);
+		// 更小的往后排，便于删除
+		if(item1->clock < clock){
+			insertAt = i;
+			break;
+		}
+	}
+	// insert
+	for(size_t i = *count-1;i>=insertAt && i>0;i--){
+		size_t p = _lst[i-1];
+		if(p!=0){
+			_lst[i] = p;
+		}
+	}
+	_lst[insertAt] = item_ptr;
+}
+{{!--
+static void Scheduled_OB_Message_destroy(OB_VM* vm,OB_Message* o_msg,MSG_PTR msg){
+	printf("NOT IMPLED Scheduled_OB_Message_destroy %zu",msg);
+}
+--}}
+{{!-- static inline void OB_Scheduled_MSG1(OB_VM* vm,ULONGLONG wait,FSM_PTR fsm,char* title,char* argType,OB_Message_Arg arg){
+	OB_Message* o_msg = OB_malloc(vm, OB_Message, "OB_Message",Scheduled_OB_Message_destroy);
+	o_msg->name = title;
+	o_msg->argType = argType;
+	o_msg->arg = arg;
+	o_msg->sender = fsm;
+	MSG_PTR msg = GetOBPtr(vm,o_msg);
+	OB_Scheduled_MSG(vm,wait,msg);
+} --}}
+static inline void OB_Scheduled_MSG(OB_VM* vm,ULONGLONG wait,FSM_PTR fsm,MSG_PTR msg,FSM_PTR self){
+	ScheduleItem* item = OB_malloc(vm,ScheduleItem,"ScheduleItem",ScheduleItem_destroy);
+	size_t item_ptr = GetOBPtr(vm, item);
+	item->clock = getClock()+wait;
+	item->msg = msg;
+	item->self = self;
+	OB_link_obj(vm,item_ptr,offsetof(ScheduleItem,msg),msg);
+	OB_link_obj(vm,sizeof(OB_OBJ),SIZE_MAX,item_ptr);
+	if(fsm==-1){
+		OB_addScheduleItem(vm,&vm->ScheduledMessages,&vm->ScheduledMessageCount,item_ptr,item->clock);
+	}else{
+		OB_FSM* o_fsm = GetOBFSM(vm,fsm);
+		OB_addScheduleItem(vm,&o_fsm->ScheduledMessages,&o_fsm->ScheduledMessageCount,item_ptr,item->clock);
+	}
+}
+
+static inline OB_BroadcastMsg(OB_VM* vm,MSG_PTR msg,FSM_PTR self){
+	
+	OB_Deque_Node* fsm_node = GetDequeNode(vm, vm->Running);
+	while (fsm_node != NULL)
+	{
+		FSM_PTR fsm = fsm_node->value;
+		size_t next = fsm_node->next;
+		if(fsm!=self){
+			OB_FSM_post_message(vm,fsm,msg);
+		}
+		fsm_node = GetDequeNode(vm, next);
+	}
+}
+{{!-- static inline OB_Scheduled_BroadcastMsg(OB_VM* vm,ULONGLONG wait,MSG_PTR msg){
+	
+	OB_Deque_Node* fsm_node = GetDequeNode(vm, vm->Running);
+	while (fsm_node != NULL)
+	{
+		FSM_PTR fsm = fsm_node->value;
+		size_t next = fsm_node->next;
+		OB_FSM_post_message(vm,fsm,msg);
+		fsm_node = GetDequeNode(vm, next);
+	}
+} --}}
+static inline void OB_handleVMScheduled(OB_VM* vm,ULONGLONG clock){
+	for(size_t i = vm->ScheduledMessageCount - 1;i!=SIZE_MAX;i--){
+		size_t p = vm->ScheduledMessages[i];
+		if(p!=0){
+			ScheduleItem* item =  GetOBObj(vm, p);
+			if(item->clock <= clock){
+				// 广播
+				MSG_PTR msg = item->msg;
+				OB_BroadcastMsg(vm,msg,item->self);
+				vm->ScheduledMessages[i] = 0;
+				OB_unlink_obj(vm,sizeof(OB_OBJ),SIZE_MAX,p);
+			}else{
+				return;
+			}
+		}
+	}
+}
+
+static inline void OB_handleFSMScheduled(OB_VM* vm,FSM_PTR fsm,ULONGLONG clock){
+	OB_FSM* o_fsm = GetOBFSM(vm,fsm);
+	for(size_t i = o_fsm->ScheduledMessageCount - 1;i!=SIZE_MAX;i--){
+		size_t p = o_fsm->ScheduledMessages[i];
+		if(p!=0){
+			ScheduleItem* item =  GetOBObj(vm, p);
+			if(item->clock <= clock){
+				MSG_PTR msg = item->msg;
+				OB_FSM_post_message(vm,fsm,msg);
+				o_fsm->ScheduledMessages[i] = 0;
+				OB_unlink_obj(vm,p,offsetof(ScheduleItem,msg),msg);
+				OB_unlink_obj(vm,sizeof(OB_OBJ),SIZE_MAX,p);
+			}else{
+				return;
+			}
+		}
+	}
+}
+static void OB_broadcastMessage(OB_VM* vm,MSG_PTR msg,int type){
+	OB_Message* o_msg = GetOBMessage(vm,msg);
+	char* name = o_msg->name;
+	char* argType = o_msg->argType;
+	OB_Deque_Node* fsm_node = GetDequeNode(vm, vm->Running);
+	while (fsm_node != NULL)
+	{
+		FSM_PTR fsm = fsm_node->value;
+		if(type == OB_Message_Type_EVENT){
+			if ( OB_FSM_getEventHandler(vm, fsm, name , argType) != NULL)
+			{
+				OB_FSM_post_message(vm, fsm, msg);
+			}
+		}else if(type == OB_Message_Type_USERMSG){
+			OB_FSM_post_message(vm, fsm, msg);
+		}
+		fsm_node = GetDequeNode(vm, fsm_node->next);
+	}
+
+}
+static int OB_VM_update(OB_VM* vm)
+{
+	if (vm->pausing)
+	{
+		return 0;
+	}
+	if (vm->paused)
+	{
+		return 0;
+	}
+	ULONGLONG clock = getClock();
+	OB_handleVMScheduled(vm,clock);
+
+	OB_Deque_Node* fsm_node = GetDequeNode(vm, vm->Running);
+	while (fsm_node != NULL)
+	{
+		FSM_PTR fsm = fsm_node->value;
+		size_t next = fsm_node->next;
+		if (OB_FSM_getEventHandler(vm, fsm, "animationframe", NULL) != NULL)
+		{
+			OB_FSM_post_message(vm, fsm, vm->predefinedMsg[ OB_PREDEFINED_MSG_animationframe ]);
+		}
+		OB_handleFSMScheduled(vm,fsm,clock);
+		fsm_node = GetDequeNode(vm, next);
+	}
+
+
+
+	FSM_PTR fsm = NULL;
+	fsm = OB_Deque_remove_first(vm,sizeof(OB_OBJ),SIZE_MAX, &vm->Pending);
+	while (fsm != NULL)
+	{
+		int r = OB_FSM_update(vm, fsm);
+		if (shouldStop(r))
+		{
+			vm->pausing = r;
+			return r;
+		}
+		fsm = OB_Deque_remove_first(vm, sizeof(OB_OBJ),SIZE_MAX,&vm->Pending);
+	}
+	return 0;
+}
+static void OB_VM_destroy(OB_VM* vm)
+{
+	// TODO 清除
+	ob_t_free(vm);
+}
+static inline OB_randInt(int A, int B){
+	return A + rand() % (B - A );
+}
+static char* OB_VM_toString(OB_VM* vm, const char* buf, size_t limit)
+{
+	sprintf_s(buf, limit, "OBVM:%zu", vm->id);
+	return buf;
+}
+static void OB_VM_pause(OB_VM* vm)
+{
+	vm->pausing = true;
+}
+static int OB_VM_isRunning(OB_VM* vm)
+{
+	return !vm->paused;
+}
+static void OB_VM_addFSM(OB_VM* vm, size_t fsm, STATE_PTR state, char* func)
+{
+	vm->Running = OB_Deque_append(vm,sizeof(OB_OBJ),SIZE_MAX, vm->Running, fsm);
+	//OB_link_obj(vm,sizeof(OB_OBJ),SIZE_MAX,fsm);
+}
+
+static OB_MessageHandler* OB_FSM_getEventHandler(OB_VM* vm, FSM_PTR fsm, char* evtName, char* argType)
+{
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	OB_STATE* o_state = GetOBSTATE(vm, o_fsm->currentState);
+	OB_Deque_Node* n = GetOBObj(vm, o_state->eventHandlers);
+	while (n != NULL && n->value != NULL)
+	{
+		OB_MessageHandler* h = GetOBObj(vm, n->value);
+		int c = strcmp(h->name, evtName);
+		if (c == 0)
+		{
+			if (h->argType == NULL || strcmp(h->argType, argType) == 0)
+			{
+				return h;
+			}
+		}
+		n = GetDequeNode(vm,n->next);
+	}
+	return NULL;
+}
+static void OB_FSM_post_prioritized_message(OB_VM* vm, FSM_PTR fsm, MSG_PTR msg)
+{
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	DequeNode_PTR PrioritizedInbox = OB_Deque_append(vm,fsm,offsetof(OB_FSM,PrioritizedInbox), o_fsm->PrioritizedInbox, msg);
+	GetOBFSM(vm,fsm)->PrioritizedInbox = PrioritizedInbox;
+	vm->Pending = OB_Deque_append(vm,sizeof(OB_OBJ),SIZE_MAX, vm->Pending, fsm);
+	OB_link_obj(vm,fsm,SIZE_MAX,msg);
+}
+
+static void OB_FSM_STATE_start(OB_VM *vm,FSM_PTR fsm){
+	if (OB_FSM_getEventHandler(vm, fsm, "Start", NULL) != NULL)
+	{
+		OB_FSM_post_prioritized_message(vm, fsm, vm->predefinedMsg[ OB_PREDEFINED_MSG_Start ]);
+	}
+}
+static void OB_FSM_init(OB_VM* vm, FSM_PTR fsm, STATE_PTR from_st, char* from_func)
+{
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	o_fsm->ScheduledMessages = NULL;
+	o_fsm->ScheduledMessageCount = NULL;
+	o_fsm->id = vm->fsmid++;
+	o_fsm->vm = vm;
+	OB_VM_addFSM(vm, fsm, from_st, from_func);
+	OB_FSM_STATE_start(vm,fsm);
+}
+static char* OB_FSM_toString(OB_VM* vm, FSM_PTR fsm, const char* buf, size_t limit)
+{
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	OB_STATE* o_state = GetOBSTATE(vm, o_fsm->currentState);
+	sprintf_s(buf, limit, "%s:%zu(%s)", o_fsm->typename, o_fsm->id, o_state->name);
+	return buf;
+}
+static void OB_GC(OB_VM* vm){
+	printf("\n\nOB_GC start MEM\n");
+	for(size_t cnt = vm->mem.GCCheckLstCnt-1;cnt < SIZE_MAX;cnt--){
+		size_t oo = sizeof(OB_OBJ);
+		size_t check = vm->mem.GCCheckLst[cnt];
+		char* c = (char*)GetOBObj(vm, check);
+		if(c==NULL){
+			continue;
+		}
+		OB_OBJ* obj = (OB_OBJ*)(c - oo);
+		if(!obj->inUsed==CHECK_HEAD){
+			continue;
+		}
+		OB_unlink_obj(vm,sizeof(OB_OBJ),-2,check);
+		{{!-- if(obj!=NULL && obj->backwards == NULL){
+			printObjInfo("deadObj", obj, vm->mem.GCCheckLst[cnt]);
+			vm->mem.GCCheckLstCnt--;
+			__OB_free_obobj(vm, obj);
+		}else if(obj!=NULL){
+			printObjInfo("liveObj", obj, vm->mem.GCCheckLst[cnt]);
+		} --}}
+	}
+	vm->mem.GCCheckLstCnt = 0;
+	printf("\n\nOB_GC end MEM\n");
+}
+static int OB_FSM_handle_message(OB_VM* vm, FSM_PTR fsm, MSG_PTR msg)
+{
+	OB_FSM* o_fsm = GetOBFSM(vm, fsm);
+	OB_STATE* o_state = GetOBSTATE(vm, o_fsm->currentState);
+	OB_Message* o_msg = GetOBMessage(vm, msg);
+	OB_Deque_Node* hnode = GetDequeNode(vm, o_msg->type == OB_Message_Type_EVENT ? o_state->eventHandlers : o_state->messageHandlers);
+
+	while (hnode != NULL)
+	{
+		MSGHDLR_PTR hp = hnode->value;
+		OB_MessageHandler* h = GetOBMessageHandler(vm, hp);
+		if (strcmp(o_msg->name, h->name) == 0)
+		{
+			if (h->argType == NULL || ( o_msg->argType!=NULL && strcmp(o_msg->argType, h->argType)== 0) )
+			{
+				int r = h->func(vm,fsm, o_fsm->currentState, msg);
+				OB_GC(vm);
+				return r;
+			}
+		}
+		hnode = GetDequeNode(vm,hnode->next);
+	}
+	return 0;
+}
+
+static int OB_FSM_update(OB_VM* vm, FSM_PTR p_fsm)
+{
+	OB_FSM* fsm = GetOBFSM(vm, p_fsm);
+	while (fsm->Inbox != 0 || fsm->PrioritizedInbox != 0) {
+		while (fsm->PrioritizedInbox != 0) {
+			MSG_PTR msg = OB_Deque_remove_first(vm,p_fsm,offsetof(OB_FSM,PrioritizedInbox), &fsm->PrioritizedInbox);
+			int r = OB_FSM_handle_message(vm, p_fsm, msg);
+			//OB_free_by_ptr(vm, msg);
+			OB_unlink_obj(vm,p_fsm,SIZE_MAX,msg);
+			if (r == 3 || shouldStop(r)) {
+				return r;
+			}
+			fsm = GetOBFSM(vm, p_fsm);
+		}
+		if (fsm->Inbox != 0) {
+			MSG_PTR msg = OB_Deque_remove_first(vm,p_fsm,offsetof(OB_FSM,Inbox), &fsm->Inbox);
+			int r = OB_FSM_handle_message(vm, p_fsm, msg);
+			//OB_free_by_ptr(vm, msg);
+			OB_unlink_obj(vm,p_fsm,SIZE_MAX,msg);
+			if (r == 3 || shouldStop(r)) {
+				return r;
+			}
+			fsm = GetOBFSM(vm, p_fsm);
+		}
+	}
+	return 0;
+}
+static void OB_print(OB_VM* vm , STR_PTR strp);
+// TEMPLATE_LIBRARY_END
+
+static void OB_FSM_destroy(OB_VM* vm,FSM_PTR fsm,STATE_PTR from_st, char* from_func){
+	vm->Running = OB_Deque_remove_item(vm,sizeof(OB_OBJ),SIZE_MAX, vm->Running, fsm);
+}
+/* DECL*/
+{{#each srcList}}
+{{#each functions}}
+
+{{/each}}
+{{#each fsms}}
+
+/** {{{../name}}}.{{{name}}} */
+{{#each states}}
+// {{{../../name}}}.{{{../name}}}.{{name}} 
+typedef struct OB_STATE_{{{nameToASCII ../../name ../name name}}} 
+    OB_STATE_{{{nameToASCII ../../name ../name name}}};
+
+static STATE_PTR OB_STATE_{{{nameToASCII ../../name ../name name}}}_create(OB_VM* vm, FSM_PTR fsm);
+
+{{#each functions}}
+static {{{functionReturnType}}} OB_FUNC_{{{nameToASCII ../../../name ../../name ../name  name}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state {{followArgs args}});
+{{/each}}
+
+{{#each eventHandlers}}
+
+/** {{{ ../../../name}}}_{{{ ../../name}}}_{{{ ../name}}}_{{{ name}}} event handler */
+static int OB_EH_{{{nameToASCII ../../../name ../../name ../name}}}_event_{{{base64 name}}}_{{{argtypebase64 args}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state, MSG_PTR msg);
+{{/each}}
+{{#each messageHandlers}}
+
+/** {{{ ../../../name}}}_{{{ ../../name}}}_{{{ ../name}}}_{{{ name}}} message handler */
+static int OB_MH_{{{nameToASCII ../../../name  ../../name ../name}}}_msg_{{{base64 name}}}_{{{argtypebase64 args}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state, MSG_PTR msg);
+{{/each}}
+{{/each}}
+/** {{{../name}}}.{{{name}}} */
+typedef struct OB_FSM_{{{nameToASCII ../name name}}}
+{
+	OB_FSM base;
+	/*
+		int USR_VAR;
+	*/
+{{#each variables}}
+	// {{{name}}}
+	{{{ctype type}}} {{{nameToASCII name}}};
+{{/each}}
+} OB_FSM_{{{nameToASCII ../name name}}};
+static FSM_PTR OB_FSM_{{{nameToASCII ../name  name}}}_create(OB_VM* vm,FSM_PTR from_fsm, STATE_PTR from_st, char* from_func);
+
+// FSM END
+{{/each}}
+// MODEL END
+{{/each}}
+
+/* DEFINE */
+{{#each srcList}}
+{{#each fsms}}
+
+/** {{{../name}}}.{{{name}}} */
+{{#each states}}
+// {{{../../name}}}.{{{../name}}}.{{name}} 
+typedef struct OB_STATE_{{{nameToASCII ../../name  ../name  name}}} 
+{
+	OB_STATE base;
+{{#each variables}}
+	// {{{name}}}
+	{{{ctype type}}} {{{nameToASCII name}}};
+{{/each}}
+} OB_STATE_{{{nameToASCII ../../name  ../name  name}}};
+
+static void OB_STATE_{{{nameToASCII ../../name ../name name}}}_destroy(OB_VM* vm , OB_STATE* o,STATE_PTR ptr){
+	while(o->eventHandlers != 0){
+		size_t h = OB_Deque_remove_first(vm,ptr,offsetof(OB_STATE,eventHandlers),&o->eventHandlers);
+	}
+}
+static STATE_PTR OB_STATE_{{{nameToASCII ../../name  ../name  name}}}_create(OB_VM* vm, FSM_PTR fsm){
+	/* {{{name}}} */
+	OB_STATE_{{{nameToASCII ../../name  ../name name}}}*  st = OB_malloc(vm, OB_STATE_{{{nameToASCII ../../name ../name name}}}, "OB_STATE",OB_STATE_{{{nameToASCII ../../name ../name  name}}}_destroy);
+	if (st == NULL)
+	{
+		FATAL("malloc fail");
+		abort();
+		return 0;
+	}
+	STATE_PTR pst = GetOBPtr(vm, st);
+	st->base.fsm = fsm;
+	st->base.name = "{{{name}}}";
+	OB_MessageHandler* h;
+	MSGHDLR_PTR hp;
+	DequeNode_PTR handlers;
+{{#each eventHandlers}}
+	h = OB_malloc(vm, OB_MessageHandler, "OB_MessageHandler",NULL);
+	if (h == NULL)
+	{
+		FATAL("malloc fail");
+		abort();
+		return 0;
+	}
+	st = /* {{{../name}}} */ (OB_STATE_{{{nameToASCII ../../../name  ../../name ../name}}}*)GetOBSTATE(vm,pst);
+{{#if messageType}}
+	h->argType = "{{{messageType}}}";
+{{else}}
+	h->argType = NULL;
+{{/if}}
+	h->type = OB_Message_Type_EVENT;
+	h->name = "{{{name}}}";
+	h->func = OB_EH_{{{nameToASCII ../../../name ../../name  ../name}}}_event_{{{base64 name}}}_{{{argtypebase64 args}}};
+	hp = GetOBPtr(vm,h);
+	handlers = OB_Deque_append(vm,pst,offsetof(OB_STATE,eventHandlers), (st->base.eventHandlers), hp);
+	st = /* {{{../name}}} */ (OB_STATE_{{{nameToASCII ../../../name  ../../name ../name}}}*)GetOBSTATE(vm,pst);
+	st->base.eventHandlers = handlers;
+{{/each}}
+	
+{{#each messageHandlers}}
+	h = OB_malloc(vm, OB_MessageHandler, "OB_MessageHandler",NULL);
+	if (h == NULL)
+	{
+		FATAL("malloc fail");
+		abort();
+		return 0;
+	}
+	st = /* {{{../name}}} */ (OB_STATE_{{{nameToASCII ../../../name  ../../name ../name}}}*)GetOBSTATE(vm,pst);
+{{#if messageType}}
+	h->argType = "{{{messageType}}}";
+{{else}}
+	h->argType = NULL;
+{{/if}}
+	h->type = OB_Message_Type_USERMSG;
+	h->name = "{{{title}}}";
+	h->func = OB_MH_{{{nameToASCII ../../../name ../../name ../name}}}_msg_{{{base64 name}}}_{{{argtypebase64 args}}};
+	hp = GetOBPtr(vm,h);
+	handlers = OB_Deque_append(vm,pst,offsetof(OB_STATE,messageHandlers), (st->base.messageHandlers), hp);
+	st = /* {{{../name}}} */ (OB_STATE_{{{nameToASCII ../../../name  ../../name ../name}}}*)GetOBSTATE(vm,pst);
+	st->base.messageHandlers = handlers;
+{{/each}}
+	return pst;
+}
+{{#each eventHandlers}}
+
+/** {{{ ../../../name}}}_{{{ ../../name}}}_{{{ ../name}}}_{{{ name}}} {{{blockId}}}*/
+static int OB_EH_{{{nameToASCII ../../../name ../../name ../name}}}_event_{{{base64 name}}}_{{{argtypebase64 args}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state, MSG_PTR msg){
+	char* fn = "{{{../../../name}}}.{{{../../name}}}.{{{../name}}}.{{{name}}}";
+{{{functionBody this  4 ../../.. ../.. .. ../../../bitcode 'eventHandlers' @root}}}
+	return 0;
+}
+{{/each}}
+{{#each messageHandlers}}
+
+/** {{{ ../../../name}}}_{{{ ../../name}}}_{{{ ../name}}}_{{{ name}}} {{{blockId}}}*/
+static int OB_MH_{{{nameToASCII ../../../name ../../name ../name}}}_msg_{{{base64 name}}}_{{{argtypebase64 args}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state, MSG_PTR msg){
+	char* fn = "{{{../../../name}}}.{{{../../name}}}.{{{../name}}}.{{{name}}}";
+{{{functionBody this  4 ../../.. ../.. .. ../../../bitcode 'messageHandlers' @root}}}
+	return 0;
+}
+{{/each}}
+
+{{#each functions}}
+static {{{functionReturnType}}} OB_FUNC_{{{nameToASCII ../../../name ../../name ../name name}}}(OB_VM* vm,FSM_PTR fsm, STATE_PTR state {{followArgs args}}){
+{{{functionBody this  4 ../../.. ../.. .. ../../../bitcode 'functions' @root}}}
+}
+{{/each}}
+
+{{/each}}
+/** {{{../name}}}.{{{name}}} */
+static void OB_FSM_{{{nameToASCII ../name name}}}_destroy(OB_VM* vm,OB_FSM* o_fsm,FSM_PTR fsm)
+{
+	OB_unlink_obj(vm,fsm,offsetof(OB_FSM,currentState),o_fsm->currentState);
+}
+static FSM_PTR OB_FSM_{{{nameToASCII ../name  name}}}_create(OB_VM* vm,FSM_PTR from_fsm, STATE_PTR from_st, char* from_func){
+	OB_FSM_{{{nameToASCII ../name  name}}}* fsm = OB_malloc(vm, OB_FSM_{{{nameToASCII ../name name}}}, "OB_FSM",OB_FSM_{{{nameToASCII ../name name}}}_destroy);
+	if (fsm == NULL)
+	{
+		FATAL("malloc fail");
+		abort();
+		return 0;
+	}
+	FSM_PTR p_fsm = GetOBPtr(vm, fsm);
+	fsm->base.vm = vm;
+	fsm->base.typename = "{{{ ../name}}}.{{{ name}}}";
+	{{#each states}}
+		{{#if @first}}
+	STATE_PTR cst = OB_STATE_{{{nameToASCII ../../name ../name  name}}}_create(vm, p_fsm);
+	fsm = (OB_FSM_{{{nameToASCII ../../name  ../name}}}*)GetOBFSM(vm,p_fsm);
+	fsm->base.currentState = cst;
+	
+	OB_link_obj(vm,p_fsm,offsetof(OB_FSM,currentState),fsm->base.currentState);
+		{{/if}}
+	{{/each}}
+	OB_FSM_init(vm, p_fsm, from_st, from_func);
+	return p_fsm;
+}
+// FSM END
+{{/each}}
+// MODEL END
+{{/each}}
+
+static OB_VM* createOBVM(OB_VM_config* config){
+	srand(time(NULL)+{{rand}});  // 使用当前时间作为随机数生成器的起始值
+	OB_VM* vm = OB_VM_create(config);
+	{{#if entry}}
+	FSM_PTR fsm = OB_FSM_{{{nameToASCII entry.module entry.fsm}}}_create(vm, 0,0, NULL);
+	{{/if}}
+	return vm;
+}
+{{#> startVM}}
+// NO startVM partial
+{{/startVM}}
+

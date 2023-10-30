@@ -1,0 +1,20 @@
+<div>
+    <Alert v-if="showNotice" type="warning">
+        {{$t('请检查狮偶烧录代理是否启动')}}
+        <a target="_black" href="../static/obburner_0.2.5.exe" style="text-decoration:underline;">下载烧录代理(v0.2.5)</a>
+    </Alert>
+    <template v-if="portlist && portlist.length>0">
+        <list v-for="p in portlist">
+            <list-item>{{p.friendlyName}}
+                <Button style="margin-left:15px" @click="select(p)" :disabled="p.sending" :loading="p.sending">{{$t('烧录')}}</Button>
+            </list-item>
+        </list>
+    </template>
+    <div v-else>
+        <Spin size="large" />
+    </div>
+    <Divider />
+    <div class="ivu-modal-footer" style="border:none">
+        <i-button @click="cancel">{{$t('取消')}}</i-button>
+    </div>
+</div>

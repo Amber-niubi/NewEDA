@@ -1,0 +1,16 @@
+{
+    "src": [
+        "src/Start.xs",
+        "src/活动内容.xs",
+        "src/学生制作.xs",
+        "src/UI.xs"
+    ],
+    "assets":[
+        "assets/答案板.png",
+        "assets/树林.png",
+        "assets/问题板.png",
+        "assets/熊二鬼鬼祟祟.png",
+        "assets/熊二跳舞.png",
+        "assets/road-1072823_960_720.jpg"
+    ]
+}

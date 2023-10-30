@@ -1,0 +1,9 @@
+<span style="vertical-align: middle;margin:5px;" :title="title">
+    <svg v-if="scenes.length>0" class="pie" :width="size" :height="size" viewBox="0 0 32 32">
+        <circle v-for="(s,i) in scenes" class="pieItem" cx="16" cy="16" r="16"
+            :stroke-dasharray="100/scenes.length+ ' 100'" :stroke="s.color" :stroke-dashoffset="-100/scenes.length*(i)"
+            fill="none">
+        </circle>
+        <circle cx="16" cy="16" r="16" stroke-width='1' fill="none" stroke="black"></circle>
+    </svg>
+</span>

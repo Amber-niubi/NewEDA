@@ -1,0 +1,742 @@
+html,
+body {
+    height: 100%;
+    width: 100%;
+    min-width: 700px;
+    margin: 0;
+    background-color: #f5f7f9;
+    overflow: hidden;
+}
+
+.ns {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+#openblock .ivu-layout-header {
+    padding: 0;
+    padding-right: 5px;
+    line-height: 35px;
+    font-size: 20px;
+}
+
+#openblock {
+    height: 100%;
+    width: 100%;
+}
+
+body .blocklyWidgetDiv .blocklyMenu {
+    overflow-y: hidden;
+}
+
+body .blocklyDropDownContent {
+    max-height: 600px;
+}
+
+.tabContent {
+    height: calc(100vh - 105px);
+    width: 100%;
+}
+
+.blocklyactiveitem {
+    font-weight: bold;
+}
+
+.dataViewer {
+    height: 100%;
+    overflow: auto;
+}
+
+.ivu-select-dropdown.ivu-auto-complete {
+    max-height: 500px;
+}
+
+#stateGraph,
+#stateEventGraph {
+    height: 200px;
+    width: 200px;
+    padding: 5px;
+}
+
+#header a:hover i {
+    color: #aaccff;
+}
+
+#header a i {
+    color: white;
+}
+
+#side1 a {
+    display: block;
+    height: 40px;
+    width: 40px;
+    margin: auto;
+    text-align: center;
+    font-size: 30px;
+    color: white;
+}
+
+#side1 a:hover {
+    color: #2d8cf0;
+}
+
+#side1 a.siderOpened {
+    color: #316a9e;
+}
+
+.layout-footer {
+    height: 20px;
+    font-size: 15px;
+}
+
+#mainContent {
+    overflow: hidden;
+}
+
+#leftsider-flyout {
+    position: relative;
+    top: 0;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 800;
+    overflow: visible;
+}
+
+#leftsider-flyout>div {
+    position: absolute;
+    width: 720px;
+    height: 100%;
+    background-color: white;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#leftsider-flyout-close-mask {
+    position: absolute;
+    top: 0;
+    width: 900%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.5;
+}
+
+#header,
+#header * {
+    vertical-align: middle;
+}
+
+.layout-logo {
+    width: 20px;
+    height: 20px;
+    float: left;
+}
+
+.topMenuItem {
+    color: white;
+}
+
+.topMenuItem:hover {
+    color: white;
+    background-color: #316a9e;
+}
+
+#header * {
+    cursor: default;
+}
+
+#header>ul>div.layout-nav>div>div.ivu-dropdown-rel {
+    line-height: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+}
+
+#header>ul>div>div>div.ivu-dropdown-rel>a {
+    margin-top: -2px;
+    height: 25px;
+    display: block;
+}
+
+.toolbar-right {
+    float: right;
+}
+
+.headerBtn {
+    min-width: 150px;
+    display: inline-block;
+}
+
+.logicCard {
+    width: 300px;
+    display: inline-block;
+    margin: 5px;
+}
+
+.statelist {
+    width: 100%;
+    height: 80px;
+    overflow-y: auto;
+}
+
+.addBtn {
+    font-size: 14px;
+    color: #5cadff;
+}
+
+.addBtn>.i {
+    font-size: 16px;
+    margin-right: 5px;
+}
+
+.actionlist {
+    width: 100%;
+    height: 80px;
+    overflow-y: auto;
+}
+
+#contentTabs {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#contentTabs>.ivu-tabs,
+#contentTabs>.ivu-tabs>.ivu-tabs-content,
+#contentTabs>.ivu-tabs>.ivu-tabs-content>.ivu-tabs-tabpane {
+    flex: auto;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.ivu-tooltip-content {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+#rbToolbox {
+    position: fixed;
+    right: 15px;
+    bottom: 20px;
+    width: 33px;
+    z-index: 300;
+}
+
+#rbToolbox>* {
+    margin-top: 4px;
+    width: 32px;
+    height: 32px;
+}
+
+#errorWindow {
+    position: absolute;
+    bottom: 25px;
+    right: 20px;
+    z-index: 100;
+    min-width: 350px;
+    max-width: 80%;
+    min-height: 200px;
+    max-height: 80%;
+}
+
+.spin-icon-load {
+    animation: ani-demo-spin 1s linear infinite;
+    color: white;
+}
+
+@keyframes ani-demo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(180deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.demo-spin-col {
+    height: 100px;
+    position: relative;
+    /* border: 1px solid #eee; */
+}
+
+#errorList {
+    max-height: 100%;
+}
+
+#errorList>p>.error {
+    color: black;
+}
+
+.ivu-layout-sider-children,
+.ivu-layout-sider-children>a {
+    text-align: center;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+thead {
+    background-color: #e1fafe
+}
+
+td,
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #f1fafe;
+}
+
+.StateTransitionChart {
+    text-align: center;
+    width: 650px;
+    height: 400px;
+}
+
+.jspreviewer .ivu-modal-header {
+    height: 30px;
+    line-height: 15px;
+    padding: 5px 16px;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top-color: transparent;
+}
+
+.jspreviewer.current .ivu-modal-header {
+    border-top-color: #19be6b;
+}
+
+.jspreviewer .ivu-modal-header-inner {
+    font-size: 15px;
+}
+
+.jspreviewer .ivu-modal-close,
+.jspreviewer .ivu-icon-ios-close {
+    font-size: 25px;
+    line-height: 15px;
+}
+
+.jspreviewer .ivu-modal-body {
+    background-color: white;
+    padding: 0;
+}
+
+.jspreviewer .jspv_wrap {
+    width: 375px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.jspreviewer .jsprevieweriframe {
+    width: 200%;
+    height: 200%;
+    margin: auto;
+    border: 0;
+    /* zoom: 1; */
+    /* -ms-transform: scale(0.25);
+    -moz-transform: scale(0.25);
+    -o-transform: scale(0.25);
+    -webkit-transform: scale(0.25); */
+    transform: scale(0.5);
+    /* -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0; */
+    transform-origin: 0 0;
+    /* border-top: 1px solid #19be6b; */
+}
+
+.jspv_wrap_mask {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    height: calc(100% - 30px);
+    width: 100%;
+    background-color: #00000006;
+}
+
+#openblock-help img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.assetCard {
+    width: 300px;
+    height: 180px;
+    margin: 5px;
+    padding: 0;
+    float: left;
+    text-align: center;
+}
+
+.assetCard>.ivu-card-body {
+    padding: 0;
+}
+
+.assetItem {
+    width: 300px;
+    height: 180px;
+    text-align: center;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    display: -webkit-flex;
+    overflow: hidden;
+}
+
+.assetItemImg {
+    max-width: 100%;
+    max-height: 98%;
+}
+
+.assetInfo {
+    text-align: left;
+    display: block;
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+    background: #e8eaec;
+    overflow: hidden;
+}
+
+.assetInfo>* {
+    display: block;
+    float: left;
+}
+
+.assetInfo>.ivu-icon {
+    padding-top: 3px;
+}
+
+.assetInfo .ol {
+    float: right;
+    text-align: right;
+    width: 20px;
+    display: flex;
+    flex-direction: row;
+}
+
+.assetCard .opIconGroup {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.assetCard .opIcon {
+    cursor: pointer;
+    margin-left:10px;
+}
+
+.assetInfo .ol .delete {
+    color: #cc3333;
+}
+
+#header .ivu-dropdown-menu .ivu-dropdown-item,
+#header .ivu-dropdown-menu .ivu-dropdown-item i {
+    color: #2d8cf0;
+}
+
+.logDiv {
+    width: 100%;
+    overflow: auto;
+}
+
+.logTableColumnNormal .ivu-table-cell {
+    padding: 0 3px 0 3px;
+    word-break: keep-all;
+}
+
+.logTableColumnType,
+.logTableColumnType .ivu-table-cell {
+    width: 40px;
+    padding: 0 3px 0 3px;
+}
+
+.logTableColumnLevel,
+.logTableColumnLevel .ivu-table-cell {
+    width: 40px;
+    padding: 0 3px 0 3px;
+}
+
+.logTableColumnTime,
+.logTableColumnTime .ivu-table-cell {
+    width: 60px;
+    padding: 0 3px 0 3px;
+}
+
+div.logDiv {
+    height: 200px;
+    width: 200px;
+    overflow: scroll;
+}
+
+div.logDiv p {
+    display: block;
+    font-size: 14px;
+}
+
+#openblock .ivu-layout-header .ProjectName {
+    height: 100%;
+    width: 100%;
+    line-height: 5px;
+    display: block;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: steelblue;
+    padding: 15px;
+    padding-bottom: 8px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+#openblock .ivu-layout-header #projectthumbnail {
+    height: 35px;
+    width: 50px;
+    top: 0;
+    left: -55px;
+    position: absolute;
+    display: block;
+}
+
+#openblock .ivu-layout-header #projectthumbnail img {
+    max-height: 35px;
+    max-width: 50px;
+    position: absolute;
+    display: block;
+}
+
+#openblock .ivu-layout-header #projectthumbnail:hover img {
+    max-height: 30vh;
+    max-width: 15vw;
+    right: 0;
+}
+
+.list-move,
+
+/* 对移动中的元素应用的过渡 */
+
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+
+.list-leave-active {
+    position: absolute;
+}
+
+.block-enter-active,
+.block-leave-active {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.block-enter-from,
+.block-leave-to {
+    opacity: 0;
+}
+
+#openblock .blocklyToolboxDiv {
+    min-width: 150px;
+    width: max-content;
+    overflow-x: visible;
+}
+
+#openblock .blocklyToolboxContents {
+    width: max-content;
+    overflow-x: visible;
+}
+
+.editedScene .ivu-form-item {
+    margin-bottom: 5px
+}
+
+.sceneColor {
+    width: 85px;
+    height: 25px;
+    display: inline-block;
+    clear: none;
+    margin-right: 5px;
+    position: relative;
+    top: 5px;
+    border: 1px solid #aaa;
+}
+
+.sceneColor.selected {
+    border: 3px solid;
+    border-top-color: #eee;
+    border-left-color: #eee;
+    border-bottom-color: #444;
+    border-right-color: #444;
+}
+
+.sceneColor>.invert {
+    display: inline-block;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    line-height: 1;
+}
+
+.colorPicker {
+    height: 40vh;
+    width: 60vw;
+    overflow-y: scroll;
+    display: block;
+}
+
+.colorPicker>* {
+    display: block;
+    float: left;
+    margin: 2px;
+}
+
+.scenemanager-run-control {
+    border-radius: 5px;
+    border: 2px white inset;
+    height: 28px;
+    min-width: 45px;
+    display: inline-flex;
+}
+
+.toolbarItem {
+    float: left;
+    margin-right: 4px;
+}
+
+.toolbar-right .toolbarItem {
+    float: right;
+    margin-left: 4px;
+}
+
+.scenemanager-list-name {
+    color: black;
+    margin-right: 5px;
+    margin-left: 5px;
+    display: inline-block;
+    text-align: left;
+}
+
+.scenemanager-list-card {
+    position: fixed;
+    top: -2px;
+    left: 67px;
+}
+
+svg.pie {
+    border-radius: 50%;
+}
+
+svg.pie circle.pieItem {
+    stroke-width: 32;
+}
+
+#errorBtn>* {
+    animation-duration: 0.3s;
+    animation-name: bling;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes bling {
+    from {
+        opacity: 0.5;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.qrcontainer img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#siderBottom {
+    position: absolute;
+    bottom: 5px;
+}
+
+
+#uidesign>.ivu-modal-content>.ivu-modal-body {
+    margin: 0;
+    padding: 0;
+}
+
+#uidesign-panel {
+    height: 100%;
+}
+
+#uidesign-panel.ivu-row>.ivu-col {
+    overflow: auto;
+}
+
+#uidesign-panel.ivu-row>.ivu-col:nth-child(odd) {
+    background-color: #fafafa;
+}
+
+.ui-component-add-btn {
+    margin: 5px;
+    width: 90%;
+    text-align: left;
+}
+
+.ui-component-add-btn .ui-component-add-info-btn {
+    display: none;
+}
+
+.ui-component-add-btn:hover .ui-component-add-info-btn {
+    text-align: right;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+/* #uidesign-panel.ivu-row>.ivu-col:nth-child(even) {
+    color: var(--color2);
+} */
+.assetProperty {
+    color: darkgray;
+    margin-left: 5px;
+    font-size: 13px;
+    line-height: 22px;
+}

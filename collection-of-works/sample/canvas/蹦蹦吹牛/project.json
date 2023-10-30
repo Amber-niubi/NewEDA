@@ -1,0 +1,8 @@
+{
+    "src": [
+        "src/Start.xs"
+    ],
+    "assets":[
+        "assets/蹦蹦吹牛.png"
+    ]
+}

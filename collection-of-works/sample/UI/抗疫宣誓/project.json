@@ -1,0 +1,15 @@
+{
+    "src": [
+        "src/Start.xs",
+        "src/UI.xs"
+    ],
+    "assets":[
+        "assets/小红心.png",
+        "assets/人物.png",
+        "assets/口号.png",
+        "assets/点击宣誓.png",
+        "assets/点击手势.png",
+        "assets/大红心.png",
+        "assets/背景.jpg"
+    ]
+}

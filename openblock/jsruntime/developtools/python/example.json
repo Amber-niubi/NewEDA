@@ -1,0 +1,57 @@
+{
+    "name": "Start",
+    "fsms": [
+      {
+        "name": "Main",
+        "states": [
+          {
+            "name": "状态",
+            "functions": [],
+            "eventHandlers": [
+              {
+                "name": "Start",
+                "blockId": "b9goEF4[jfqtN8T9qmNy",
+                "body": {
+                  "variables": [],
+                  "instructions": [
+                    {
+                      "blockId": "]?:fQfLXR:I#5.?M!dAf",
+                      "expr": {
+                        "blockId": "7inS+z/qA;k0c37?.pP9",
+                        "text": "text"
+                      }
+                    }
+                  ]
+                },
+                "args": [],
+                "returnType": null,
+                "codename": "状态"
+              }
+            ],
+            "messageHandlers": [],
+            "variables": [
+              {
+                "name": "stateVar",
+                "type": "Integer",
+                "export": true
+              }
+            ]
+          }
+        ],
+        "functions": [],
+        "variables": [
+          {
+            "name": "fsmVar",
+            "type": "Number",
+            "export": true
+          }
+        ],
+        "structs": []
+      }
+    ],
+    "functions": [],
+    "structs": [],
+    "env": [
+      "openBrother"
+    ]
+  }
