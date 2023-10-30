@@ -22,10 +22,10 @@ nav ul{
     float: right;
     margin-top: 33px;
     margin-right: 20px;
-
 }
 nav ul li{
     display:inline-block;
+
     font-size: 40px;
     font-family:LiSu;
     padding: 10px;
@@ -95,8 +95,13 @@ main  .cloud-2{
 
 #YClist{
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content:center;
 }
 #YClist li{
+    
     position: relative;
     width: 284px;
     height: 284x;
@@ -109,6 +114,11 @@ main  .cloud-2{
     position: relative;
     display: inline-block;
     
+}
+#YClist li div{
+    width: 284px;
+    text-align: center;
+    color: #333;
 }
 .YClist-img-cloud{
     margin-top: 40px;

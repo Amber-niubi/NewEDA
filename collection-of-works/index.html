@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="为教育机构提供狮偶相关解决方案。">
+    <meta name="description" content="为机构提供狮偶相关解决方案。">
     <meta name="keywords" content="狮偶">
-    <meta name="author" content="奕尘教育">
-    <title>奕尘教育</title>
-    <!--作者：奕尘教育，未经允许禁止商用。邮件联系：public@1ccode.com-->
+    <meta name="author" content="奕尘">
+    <title>奕尘</title>
+    <!--作者：奕尘，未经允许禁止商用。邮件联系：public@1ccode.com-->
     <link href="./index.css" rel="stylesheet">
     <script src="./public/js/jquery.min.js"></script>
 
@@ -96,13 +96,13 @@
                for (let i in txt) {
                 
                 if (txt[i]['img']) {
-                    //设定的图片
+                    
                     imgstr = '<img src="' + txt[i]['img'] + '" class="YClist-img" >';
                 } else {
-                    //默认图片
+                    
                     imgstr = '<img class="YClist-img" src="./sample/static/images/nothing.svg">';
                 }
-                htmlstr += '<li><a target="_Blank" href="' + makeURL(txt[i].url) + '">' + cloud + '' + imgstr + '</a></li>';
+                htmlstr += '<li><a target="_Blank" href="' + makeURL(txt[i].url) + '"><div>' + txt[i]['name'] + '</div>' + cloud + '' + imgstr + '</a></li>';
 
                //<div>' + txt[i]['name'] + '</div>
             }
