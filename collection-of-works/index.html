@@ -23,14 +23,14 @@
         </div>
         <ul>
                 
-            <span>
+            <!--<span id="btn">
                 <?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.94971 11.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.94971 23.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.94971 35.9497H39.9497" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <li>
+            </span>-->
+            <li class="nav-manu">
                 <a href=""><?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 43H39L23 17L7 43Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.0769 25L23 28L27.9231 25" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 17V12V4" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M35 4H23V12H35L32 8L35 4Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>社区</a>
                 
             </li>
-             <li>
+             <li class="nav-manu">
                 <a href=""><?xml version="1.0" encoding="UTF-8"?><svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10C4 8.89543 4.89543 8 6 8H34C35.1046 8 36 8.89543 36 10V19L44 13V36L36 30V38C36 39.1046 35.1046 40 34 40H6C4.89543 40 4 39.1046 4 38V10Z" fill="#f8e71c" stroke="#f5a623" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 16V20" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 14V22" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 16V20" stroke="#f8e71c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>视频</a>
             </li>
         </ul>
@@ -86,12 +86,12 @@
                 return (url);
             }
         }
-        $(document).ready(function () {
-            let htmlstr = "";
-            let imgstr = '';
-            let cloud = '<img class="YClist-img-cloud" src="./public/images/SVG/project.svg">';
-            $.getJSON("settings.json", function(result){
-               let txt = result;
+            $(document).ready(function () {
+                let htmlstr = "";
+                let imgstr = '';
+                let cloud = '<img class="YClist-img-cloud" src="./public/images/SVG/project.svg">';
+                $.getJSON("settings.json", function(result){
+                let txt = result;
 
                for (let i in txt) {
                 
@@ -102,32 +102,36 @@
                     
                     imgstr = '<img class="YClist-img" src="./sample/static/images/nothing.svg">';
                 }
-                htmlstr += '<li><a target="_Blank" href="' + makeURL(txt[i].url) + '"><div>' + txt[i]['name'] + '</div>' + cloud + '' + imgstr + '</a></li>';
+                    htmlstr += '<li><a target="_Blank" href="' + makeURL(txt[i].url) + '"><div>' + txt[i]['name'] + '</div>' + cloud + '' + imgstr + '</a></li>';
 
-               //<div>' + txt[i]['name'] + '</div>
-            }
+               
+                }
             
 
-            $('#YClist').html(htmlstr);
-            $(window).scroll(function () {
-                var $scroll = $(document).scrollTop()
-                if ($scroll > 30) {
-                    $(".scrollTo").css('display', '');
-                } else {
-                    $(".scrollTo").css('display', 'none');
-                }
+                $('#YClist').html(htmlstr);
+                $(window).scroll(function () {
+                    var $scroll = $(document).scrollTop()
+                    if ($scroll > 30) {
+                        $(".scrollTo").css('display', '');
+                    } else {
+                        $(".scrollTo").css('display', 'none');
+                    }
 
-            });
-            $('.scrollTo').click(function () {
-                scrollTo(0, 0);
-            })
+                });
+                $('.scrollTo').click(function () {
+                    scrollTo(0, 0);
+                })
 
                 
             })
             //console.log(txt);
             
            
-        })
+    })
+    
+    
+
+
     </script>
 </body>
 </html>
